@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { create, getAll, getById, remove, update } from "../controllers/PermissionsControllers";
+import { create, getAll, getById, remove, update, updateRestrictedRoutes } from "../controllers/PermissionsControllers";
 
 const permissionsRoute = Router();
 
@@ -8,6 +8,8 @@ permissionsRoute.get("/", getAll);
 permissionsRoute.get("/:id", getById);
 
 permissionsRoute.post("/create", create);
+
+permissionsRoute.patch("/updateScreens/:id", updateRestrictedRoutes);
 
 permissionsRoute.put("/edit/:id", update);
 
