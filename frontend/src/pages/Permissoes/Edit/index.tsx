@@ -71,7 +71,7 @@ export const EditPermissaoPage = () => {
             }
         }
 
-        api.put(endpoints.permissoes.update(id), { name, descriptiongit })
+        api.put(endpoints.permissoes.update(id), { name, description })
             .then((response) => {
 
                 const data = response.data as ResponseApiDefault;
