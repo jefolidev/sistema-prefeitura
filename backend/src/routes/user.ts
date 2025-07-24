@@ -9,7 +9,7 @@ userRoutes.get("/", getAllUsers);
 userRoutes.get("/servidores", getAllServidores);
 
 userRoutes.get(
-    "/id/:id", 
+    "/id/:id",
     [
         body("id").isUUID().withMessage("id"),
     ],
@@ -26,9 +26,9 @@ userRoutes.post(
             max: 25
         }).withMessage("user"),
         body("email").isEmail().withMessage("email"),
-        body("password").isLength({ 
-            min: 6, 
-            max: 20 
+        body("password").isLength({
+            min: 6,
+            max: 20
         }).withMessage("password"),
         body("cpf").isLength({
             min: 11,

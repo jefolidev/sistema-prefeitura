@@ -17,7 +17,6 @@ const Login = () => {
     const [user, setUser] = useState('');
     const [password, setPassword] = useState('');
 
-
     const [inputTypePassword, setInputTypePassword] = useState('password');
 
     const {setAuthenticated, setLoading} = useContext(Context);

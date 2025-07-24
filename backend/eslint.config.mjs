@@ -1,19 +1,19 @@
-import globals from "globals";
 import pluginJs from "@eslint/js";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 
 
 export default [
     { files: ["**/*.{ts}"] },
-    { 
-        languageOptions: { 
-            globals: globals.node 
+    {
+        languageOptions: {
+            globals: globals.node
         }
     },
     {
-        rules:{
+        rules: {
             quotes: ["error", "double", { "allowTemplateLiterals": true }],
-            indent: ["error", 4, { "SwitchCase": 1 }],
+            indent: ["off", 2, { "SwitchCase": 1 }],
             // "object-property-newline": ["error", {
             //     "allowAllPropertiesOnSameLine": false
             // }],

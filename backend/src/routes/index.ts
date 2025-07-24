@@ -1,13 +1,14 @@
 import { Router } from "express";
 
-import userRoutes from "./user";
+import isAuth from "../shared/middlewares/isAuth";
 import departamentosRoutes from "./departamentos";
 import fornecedoresRoutes from "./fornecedores";
-import produtosRoutes from "./produtos";
 import funcionariosRoutes from "./funcionarios";
-import requisicaoRoutes from "./requisicao";
 import gruposRoutes from "./grupos";
-import isAuth from "../shared/middlewares/isAuth";
+import permissionsRoute from "./permissoes";
+import produtosRoutes from "./produtos";
+import requisicaoRoutes from "./requisicao";
+import userRoutes from "./user";
 
 const routes = Router();
 
@@ -18,6 +19,7 @@ routes.use("/produtos", isAuth, produtosRoutes);
 routes.use("/funcionarios", isAuth, funcionariosRoutes);
 routes.use("/requisicao", isAuth, requisicaoRoutes);
 routes.use("/grupos", isAuth, gruposRoutes);
+routes.use("/permissoes", isAuth, permissionsRoute);
 
 
 export default routes;

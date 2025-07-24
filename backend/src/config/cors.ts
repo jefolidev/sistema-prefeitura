@@ -6,8 +6,8 @@ if (process.env.NODE_ENV === "development") {
     logger.info("Rodando em ambiente de desenvolvimento");
 
     cors = [
-        "http://localhost:3000", // <<— ADICIONA AQUI
-        "http://localhost:3001", // <<— ADICIONA AQUI
+        "http://localhost:3000",
+        "http://localhost:3001",
         "http://192.168.56.1",
         "http://192.168.56.1:5173",
         "http://192.168.0.58:8000",
