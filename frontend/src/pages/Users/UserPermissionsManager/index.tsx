@@ -99,15 +99,12 @@ export function UserPermissionsManager() {
                             <td>{permissao.description}</td>
                             
                             <td>
-                                <label className="relative inline-flex items-center cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={userPermissions[permissao.id] || false}
-                                        onChange={() => togglePermissao(permissao.id)}
-                                        className="sr-only peer"
-                                    />
-                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-400 rounded-full peer peer-checked:bg-blue-600 transition-all duration-300" />
-                                </label>
+                                <input
+                                    type="checkbox"
+                                    checked={userPermissions[permissao.id] || false}
+                                    onChange={() => togglePermissao(permissao.id)}
+                                    className="sr-only peer"
+                                />
                             </td>
                         </tr>
                     ))}
