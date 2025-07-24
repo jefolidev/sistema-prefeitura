@@ -9,6 +9,7 @@ import permissionsRoute from "./permissoes";
 import produtosRoutes from "./produtos";
 import requisicaoRoutes from "./requisicao";
 import userRoutes from "./user";
+import userPermissionsRoute from "./user-permission";
 
 const routes = Router();
 
@@ -20,6 +21,7 @@ routes.use("/funcionarios", isAuth, funcionariosRoutes);
 routes.use("/requisicao", isAuth, requisicaoRoutes);
 routes.use("/grupos", isAuth, gruposRoutes);
 routes.use("/permissoes", isAuth, permissionsRoute);
+routes.use("/userPermissoes", isAuth, userPermissionsRoute);
 
 
 export default routes;

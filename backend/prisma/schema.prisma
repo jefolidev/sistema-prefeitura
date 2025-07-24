@@ -41,17 +41,17 @@ model Permissions {
 }
 
 model UserPermissions {
-    id            String   @id @default(uuid()) @map("id")
-    usersId       String   @map("users_id")
-    permissionsId String   @map("permissions_id")
-    isEnabled     Boolean  @default(false) @map("is_enabled")
-    createdAt     DateTime @default(now()) @map("created_at")
-    updatedAt     DateTime @updatedAt @map("updated_at")
+    id           String   @id @default(uuid()) @map("id")
+    userId       String   @map("user_id")
+    permissionId String   @map("permission_id")
+    isEnabled    Boolean  @default(false) @map("is_enabled")
+    createdAt    DateTime @default(now()) @map("created_at")
+    updatedAt    DateTime @updatedAt @map("updated_at")
 
-    users       Users       @relation(fields: [usersId], references: [id])
-    permissions Permissions @relation(fields: [permissionsId], references: [id])
+    user       Users       @relation(fields: [userId], references: [id])
+    permission Permissions @relation(fields: [permissionId], references: [id])
 
-    @@unique([usersId, permissionsId])
+    @@unique([userId, permissionId])
     @@map("user_permissions")
 }
 
