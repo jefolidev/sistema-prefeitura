@@ -68,6 +68,8 @@ interface PermissaoCreateRequest extends Request {
 export const create = async (req: PermissaoCreateRequest, res: Response): Promise<void> => {
   const { name, description } = req.body;
 
+  console.log(`Informacoes que chegaram ao back ${name}, ${description}`);
+
   if (!name) {
     res.status(400).json({
       status: 400,

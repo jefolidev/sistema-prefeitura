@@ -15,7 +15,6 @@ export interface PermissionsGetResponse extends ResponseApiDefault {
 export type PermissionsCreateRequest = {
   name: string;
   description: string
-  isActive: boolean
 }
 
 export type PermissionsUpdateRequest = {

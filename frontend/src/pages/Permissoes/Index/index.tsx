@@ -35,7 +35,7 @@ export function PermissoesIndex() {
         <div className="container-fluid p-3">
             <h1>Permissões</h1>
             <div className="mt-3">
-                <button className="btn btn-primary mb-3" onClick={() => navigate("/usuarios/create")}>
+                <button className="btn btn-primary mb-3" onClick={() => navigate("/permissoes/create")}>
                     Cadastrar permissão
                 </button>
             </div>
@@ -55,7 +55,7 @@ export function PermissoesIndex() {
                             <td>{new Date(permissao.createdAt).toLocaleString('pt-br')}</td>
                             <td>{new Date(permissao.updatedAt).toLocaleString('pt-br')}</td>
                             <td>
-                                <button className="btn btn-secondary me-2" onClick={() => navigate(`/usuarios/edit/${permissao.id}`)}>
+                                <button className="btn btn-secondary me-2" onClick={() => navigate(`/permissoes/edit/${permissao.id}`)}>
                                     <FiEdit />
                                 </button>
 
