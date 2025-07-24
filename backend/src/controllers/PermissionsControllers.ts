@@ -154,24 +154,6 @@ export const update = async (req: PermissaoUpdateRequest, res: Response): Promis
   });
 };
 
-
-// interface PermissaoStatusSwitchRequest extends Request {
-//   params: PermissoesUpdateQuery;
-// }
-
-// export const switchStatus = async (req: PermissaoStatusSwitchRequest, res: Response): Promise<void> => {
-//   const { id } = req.params;
-
-//   if (!id) {
-//     res.status(400).json({
-//       status: 400,
-//       message: "ID da permissão não informado"
-//     });
-//     return;
-//   }
-
-// };
-
 interface PermissaoRemoveRequest extends Request {
   params: PermissoesUpdateQuery;
 }
