@@ -52,6 +52,7 @@ model UserPermissions {
     permissions Permissions @relation(fields: [permissionsId], references: [id])
 
     @@unique([usersId, permissionsId])
+    @@map("user_permissions")
 }
 
 model Fornecedores {

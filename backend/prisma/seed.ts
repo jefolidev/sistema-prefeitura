@@ -3,7 +3,6 @@ import { hashSync } from "bcrypt";
 
 const prisma = new PrismaClient();
 
-
 (async () => {
     console.log("Seeding database...");
     // Clear existing data
@@ -14,7 +13,27 @@ const prisma = new PrismaClient();
     await prisma.grupos.deleteMany();
     await prisma.relatorios.deleteMany();
     await prisma.relatorioItens.deleteMany();
-    
+    await prisma.userPermissions.deleteMany();
+    await prisma.permissions.deleteMany();
+
+    // Create many permissions
+    const permissions = [
+        { name: "create_post", description: "Permite criar posts" },
+        { name: "delete_post", description: "Permite deletar posts" },
+        { name: "view_report", description: "Permite visualizar relatórios" },
+        { name: "edit_user", description: "Permite editar usuários" },
+    ]
+
+    for (const perm of permissions) {
+        await prisma.permissions.upsert({
+            where: { name: perm.name },
+            update: {},
+            create: perm
+        })
+    }
+
+    console.log("Permissions created successfully!")
+
     // Create an admin user
     console.log("Creating admin user...");
     const hash = hashSync("admin123", 10);
