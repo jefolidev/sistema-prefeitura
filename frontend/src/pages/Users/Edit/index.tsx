@@ -1,14 +1,15 @@
 import { CFormInput } from "@coreui/react";
-import { useContext, useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import api from "../../../utils/api";
-import endpoints from "../../../utils/endpoints";
-import { useNavigate, useParams } from "react-router-dom";
-import ResponseApiDefault from "../../../@types/ResponseApiDefault";
 import axios from "axios";
+import { useContext, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import ResponseApiDefault from "../../../@types/ResponseApiDefault";
 import { UsersGetByIdResponse } from "../../../@types/UsersRequests";
 import { Context } from "../../../AuthContext";
+import api from "../../../utils/api";
+import endpoints from "../../../utils/endpoints";
 import formatCpf from "../../../utils/format-cpf";
+import { UserPermissionsManager } from "../UserPermissionsManager";
 
 export const EditUsuarioPage = () => {
 
@@ -238,6 +239,8 @@ export const EditUsuarioPage = () => {
                             As senhas não coincidem. Por favor, verifique.
                         </div>
                     )}
+
+                    <UserPermissionsManager/>
 
                     <div>
                         <button className="btn btn-primary mt-3" type="submit">
