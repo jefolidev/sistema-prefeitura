@@ -3,7 +3,7 @@ import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { PermissionsGetByIdResponse } from "../../../@types/PermissoesRequests";
+import { PermissionsGetByIdResponse, PermissionsGetResponse } from "../../../@types/PermissoesRequests";
 import ResponseApiDefault from "../../../@types/ResponseApiDefault";
 import { Context } from "../../../AuthContext";
 import api from "../../../utils/api";
@@ -88,7 +88,22 @@ export const EditPermissaoPage = () => {
             });
     }
 
+    const handleRemove = () => {
+        api.delete(endpoints.permissoes.delete(id)).then(
+            response => {
+                const data = response.data as PermissionsGetResponse;
+                toast.success(data.message);
+            })
+            .catch(error => {
+                const data = error.response?.data as ResponseApiDefault;
 
+                toast.error(data?.message || "Erro ao excluir departamento");
+            })
+            .finally(() => {
+                setLoading(false);
+                navigate('/permissoes')
+            })
+    }
 
     return (
         <div className="container-fluid p-3">
@@ -126,12 +141,9 @@ export const EditPermissaoPage = () => {
                         <button className="btn btn-primary mt-3" type="submit">
                             Atualizar Permissão
                         </button>
-                        {/* <button className={[
-                            "btn mt-3 ms-2",
-                            userActive ? "btn-danger" : "btn-success"
-                        ].join(" ")} type="button" onClick={handleActive}>
-                            {userActive ? "Desativar Permissão" : "Ativar Permissão"}
-                        </button> */}
+                        <button className={["btn mt-3 ms-2 btn-danger text-white"].join(" ")} type="button" onClick={handleRemove}>
+                            Remover Permissão
+                        </button>
                     </div>
                 </div>
             </form>
