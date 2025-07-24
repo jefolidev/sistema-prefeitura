@@ -7,6 +7,6 @@ userPermissionsRoute.get("/", getAll);
 
 userPermissionsRoute.get("/:id", getUserPermissionsById);
 
-userPermissionsRoute.patch("/switchStatus/:id", switchUsuarioStatus);
+userPermissionsRoute.patch("/switchStatus", switchUsuarioStatus);
 
 export default userPermissionsRoute;

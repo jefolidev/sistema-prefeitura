@@ -21,7 +21,7 @@ routes.use("/funcionarios", isAuth, funcionariosRoutes);
 routes.use("/requisicao", isAuth, requisicaoRoutes);
 routes.use("/grupos", isAuth, gruposRoutes);
 routes.use("/permissoes", isAuth, permissionsRoute);
-routes.use("/userPermissoes", isAuth, userPermissionsRoute);
+routes.use("/permissoesUsuario", isAuth, userPermissionsRoute);
 
 
 export default routes;

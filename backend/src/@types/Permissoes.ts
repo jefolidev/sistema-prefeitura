@@ -8,7 +8,7 @@ export type PermissoesUpdateQuery = {
 };
 
 export type UserPermissionsGetQuery = {
-  userId: string;
+  id: string;
 }
 
 export type UserPermissionsSwitchStatusQuery = {

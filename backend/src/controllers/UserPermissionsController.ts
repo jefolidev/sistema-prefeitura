@@ -27,8 +27,8 @@ interface UserPermissoesGetByIdRequest extends Request {
 }
 
 export const getUserPermissionsById = async (req: UserPermissoesGetByIdRequest, res: Response): Promise<void> => {
-  const { userId } = req.params;
-
+  const { id: userId } = req.params;
+  console.log("id no back: ", userId);
   if (!userId) {
     res.status(400).json({
       status: 400,
@@ -69,11 +69,11 @@ export const getUserPermissionsById = async (req: UserPermissoesGetByIdRequest, 
 };
 
 interface UserPermissaoSwitchRequest extends Request {
-  params: UserPermissionsSwitchStatusQuery;
+  body: UserPermissionsSwitchStatusQuery;
 }
 
 export const switchUsuarioStatus = async (req: UserPermissaoSwitchRequest, res: Response): Promise<void> => {
-  const { userId, permissionId } = req.params;
+  const { userId, permissionId } = req.body;
 
   try {
     const existing = await prisma.userPermissions.findUnique({
