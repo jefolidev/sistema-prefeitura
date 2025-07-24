@@ -12,6 +12,10 @@ export interface PermissionsGetResponse extends ResponseApiDefault {
   data: Permissions[]
 }
 
+export interface PermissionsGetByIdResponse extends ResponseApiDefault {
+  data?: Permissions
+}
+
 export type PermissionsCreateRequest = {
   name: string;
   description: string

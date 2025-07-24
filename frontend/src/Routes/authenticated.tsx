@@ -15,6 +15,7 @@ import { CreateGruposPage } from "../pages/Grupos/Create";
 import { EditGruposPage } from "../pages/Grupos/Edit";
 import GruposIndex from "../pages/Grupos/Index";
 import { CreatePermissoesPage } from "../pages/Permissoes/Create";
+import { EditPermissaoPage } from "../pages/Permissoes/Edit";
 import { PermissoesIndex } from "../pages/Permissoes/Index";
 import { CreateProdutosPage } from "../pages/Produtos/Create";
 import { EditProdutoPage } from "../pages/Produtos/Edit";
@@ -94,7 +95,7 @@ const AuthenticatedRoutes:React.FC = () => {
                             <Route path="/permissoes">
                                 <Route index element={<PermissoesIndex />}/>
                                 <Route path="create" element={<CreatePermissoesPage />}/>
-                                {/* <Route path="edit/:id" element={<EditUsuarioPage />}/> */}
+                                <Route path="edit/:id" element={<EditPermissaoPage />}/>
                             </Route>
                             <Route path="*" element={<Navigate to="/" />} />
                         </Routes>

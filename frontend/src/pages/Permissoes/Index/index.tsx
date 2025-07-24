@@ -44,6 +44,8 @@ export function PermissoesIndex() {
                     <tr>
                         <th className="text-nowrap">Nome</th>
                         <th className="text-nowrap">Descricao</th>
+                        <th className="text-nowrap">Criado em</th>
+                        <th className="text-nowrap">Ultima vez atualizado</th>
                         <th className="text-end text-nowrap"></th>
                     </tr>
                 </thead>
