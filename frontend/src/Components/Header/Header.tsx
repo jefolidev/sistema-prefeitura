@@ -1,19 +1,21 @@
+import { cilLockLocked, cilMoon, cilPowerStandby, cilSun } from '@coreui/icons';
+import CIcon from '@coreui/icons-react';
+import { CAvatar, CButton, CDropdown, CDropdownDivider, CDropdownItem, CDropdownMenu, CDropdownToggle } from '@coreui/react';
 import { useContext } from 'react';
 import { RxHamburgerMenu } from 'react-icons/rx';
-import { CAvatar, CButton, CDropdown, CDropdownDivider, CDropdownItem, CDropdownMenu, CDropdownToggle } from '@coreui/react';
-import CIcon from '@coreui/icons-react';
-import { cilMoon, cilPowerStandby, cilSun } from '@coreui/icons';
 
-import { Context } from '../../AuthContext';
-import styleSidebar from '../Sidebar/Sidebar.module.css';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import noProfile from '../../assets/noProfile.png';
+import { Context } from '../../AuthContext';
 import api from '../../utils/api';
 import endpoints from '../../utils/endpoints';
-import { toast } from 'react-toastify';
+import styleSidebar from '../Sidebar/Sidebar.module.css';
 
 const Header = () => {
 
-    const {sidebar, setSidebar, theme, setTheme, setAuthenticated, setLoading, name, userName} = useContext(Context);
+    const {sidebar, setSidebar, theme, setTheme, setAuthenticated, setLoading, name, userName} = useContext(Context); 
+    const navigate = useNavigate()
 
     const logout = () => {
         setLoading(true);
@@ -66,6 +68,7 @@ const Header = () => {
                                 <h6>{userName}</h6>
                             </div>
                             <CDropdownDivider />
+                            <CDropdownItem onClick={() => navigate("/permissoes")}> <CIcon icon={cilLockLocked}/> Permissões</CDropdownItem>
                             <CDropdownItem onClick={logout}><CIcon icon={cilPowerStandby} /> Desconectar</CDropdownItem>
                         </CDropdownMenu>
                     </CDropdown>

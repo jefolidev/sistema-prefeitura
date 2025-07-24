@@ -75,7 +75,12 @@ const endpoints = {
         update: (id: string) => `/requisicao/edit/${id}`,
         delete: (id: string) => `/requisicao/delete/${id}`,
         exportPdf: (id: string) => `/requisicao/pdf/${id}`,
-    }
+    },
+    permissoesUsuario: {
+        getAll: "/permissoesUsuario",
+        switchStatus: '/permissoesUsuario/switchStatus',
+        getUserPermissionsById: (id: string) => `/permissoesUsuario/${id}`,
+    },
 }
 
 export default endpoints;
