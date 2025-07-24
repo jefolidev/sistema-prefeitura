@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { create, getAll, getById, remove, update, exportPdf, exportProdutosPdf } from "../controllers/FornecedorControllers";
+import { create, exportPdf, exportProdutosPdf, getAll, getById, remove, update } from "../controllers/FornecedorControllers";
 
 const fornecedoresRoutes = Router();
 
@@ -10,6 +10,7 @@ fornecedoresRoutes.get("/:id", getById);
 fornecedoresRoutes.post("/create", create);
 
 fornecedoresRoutes.get("/export/pdf", exportPdf);
+
 fornecedoresRoutes.get("/:id/produtos/export/pdf", exportProdutosPdf);
 
 fornecedoresRoutes.put("/edit/:id", update);

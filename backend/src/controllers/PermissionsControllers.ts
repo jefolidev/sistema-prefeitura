@@ -158,7 +158,7 @@ interface PermissaoUpdateRequest extends Request {
 
 export const update = async (req: PermissaoUpdateRequest, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { name, description } = req.body;
+  const { name, description, routesToRestrict } = req.body;
 
   if (!id) {
     res.status(400).json({
@@ -186,7 +186,7 @@ export const update = async (req: PermissaoUpdateRequest, res: Response): Promis
 
   prisma.permissions.update({
     where: { id: String(id) },
-    data: { name, description }
+    data: { name, description, routesToRestrict }
   }).then(permission => {
     res.json({
       status: 200,
