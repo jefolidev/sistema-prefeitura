@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { PermissoesCreateRequestBody, PermissoesUpdateQuery } from "../@types/Permissoes";
+import { PermissoesCreateRequestBody, PermissoesUpdateQuery, PermissoesUpdateRoutesToRestrictBody } from "../@types/Permissoes";
 import application from "../config/application";
 import { prisma } from "../shared/database/prisma";
 
@@ -66,10 +66,15 @@ interface PermissaoCreateRequest extends Request {
 }
 
 export const create = async (req: PermissaoCreateRequest, res: Response): Promise<void> => {
-  const { name, description } = req.body;
+  const { name, description, routesToRestrict } = req.body;
 
-  console.log(`Informacoes que chegaram ao back ${name}, ${description}`);
-
+  if (routesToRestrict && !Array.isArray(routesToRestrict)) {
+    res.status(400).json({
+      status: 400,
+      message: "Tela(s) inválida(s)"
+    });
+    return;
+  }
   if (!name) {
     res.status(400).json({
       status: 400,
@@ -87,7 +92,7 @@ export const create = async (req: PermissaoCreateRequest, res: Response): Promis
   }
 
   prisma.permissions.create({
-    data: { name, description }
+    data: { name, description, routesToRestrict: routesToRestrict ?? [] }
   }).then(permission => {
     res.status(201).json({
       status: 201,
@@ -98,6 +103,49 @@ export const create = async (req: PermissaoCreateRequest, res: Response): Promis
     res.status(500).json({
       status: 500,
       message: "Erro ao criar permissão",
+      ...(application.type === "development" && { error })
+    });
+  });
+};
+
+interface UpdateRestrictedRoutesRequest extends Request {
+  params: PermissoesUpdateQuery;
+  body: PermissoesUpdateRoutesToRestrictBody
+}
+
+export const updateRestrictedRoutes = async (req: UpdateRestrictedRoutesRequest, res: Response): Promise<void> => {
+  const { id } = req.params;
+  const { routesToRestrict } = req.body;
+
+
+  if (!id) {
+    res.status(400).json({
+      status: 400,
+      message: "Id da permissão não informado"
+    });
+    return;
+  }
+
+  if (!Array.isArray(routesToRestrict)) {
+    res.status(400).json({
+      status: 400,
+      message: "Tela(s) não informada(s) ou inválida(s)"
+    });
+    return;
+  }
+
+  prisma.permissions.update({
+    where: { id }, data: { routesToRestrict }
+  }).then(permission => {
+    res.status(201).json({
+      status: 201,
+      message: "Permissão atualizada com sucesso",
+      data: permission
+    });
+  }).catch(error => {
+    res.status(500).json({
+      status: 500,
+      message: "Erro ao atualizar permissão",
       ...(application.type === "development" && { error })
     });
   });
