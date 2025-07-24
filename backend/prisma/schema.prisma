@@ -1,0 +1,131 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Users {
+    id        String   @id @default(uuid()) @map("id")
+    email     String?   @unique @map("email")
+    username  String?   @unique @map("username")
+    name      String    @map("name")
+    surname   String   @map("surname")
+    password  String?   @map("password")
+    isSuperUser Boolean  @default(false) @map("is_super_user")
+    cpf      String?  @unique @map("cpf")
+    isActive  Boolean  @default(true) @map("is_active")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("users")
+    relatoriosUser Relatorios[] @relation("user")
+    relatoriosCreator Relatorios[] @relation("creator")
+
+}
+
+model Fornecedores {
+    id        String   @id @default(uuid()) @map("id")
+    name      String   @unique() @map("name")
+    cnpj      String?  @map("cnpj")
+    razaoSocial String? @map("razao_social")
+    endereco  String?  @map("endereco")
+    email     String?  @map("email")
+    telefone  String?  @map("telefone")
+    observacoes String? @map("observacoes")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@index([name], name: "fornecedores_name_index")
+    
+    
+    @@map("fornecedores")
+    Produtos Produtos[]
+    Relatorios Relatorios[]
+}
+
+model Departamentos {
+    id        String   @id @default(uuid()) @map("id")
+    name      String   @unique @map("name")
+    responsavel String @map("responsavel")
+    cpf       String?  @map("cpf")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("departamentos")
+    Produtos Produtos[]
+    Relatorios Relatorios[]
+}
+
+model Grupos {
+    id        String   @id @default(uuid()) @map("id")
+    name      String   @unique @map("name")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("grupos")
+    produtos Produtos[]
+}
+
+
+model Produtos {
+    id        String   @id @default(uuid()) @map("id")
+    name      String   @unique @map("name")
+    description String? @map("description")
+    quantity Int      @default(0) @map("quantity")
+    fornecedorId String @map("fornecedor_id")
+    departamentoId String? @map("departamento_id")
+    unidadeMedida String @map("unidade_medida")
+    valor     Float   @map("valor")
+    grupoId   String  @map("grupo_id")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("produtos")
+    fornecedor Fornecedores @relation(fields: [fornecedorId], references: [id])
+    departamento Departamentos? @relation(fields: [departamentoId], references: [id])
+    grupo   Grupos @relation(fields: [grupoId], references: [id])
+
+    RelatorioItens RelatorioItens[]
+}
+
+model Relatorios {
+    id           String   @id @default(uuid()) @map("id")
+    fornecedorId String   @map("fornecedor_id")
+    userId       String   @map("user_id")
+    departamentoId String? @map("departamento_id")
+    creatorId    String?  @map("creator_id")
+    seq          Int      @default(autoincrement()) @map("seq")
+    nameRetirante  String?  @map("name_retirante")
+    observacao   String?  @map("observacao")
+    isCanceled   Boolean  @default(false) @map("is_canceled")
+    createdAt    DateTime @default(now()) @map("created_at")
+    updatedAt    DateTime @updatedAt @map("updated_at")
+
+    @@map("relatorios")
+    @@unique([seq])
+
+    fornecedor Fornecedores @relation(fields: [fornecedorId], references: [id])
+    user       Users        @relation("user", fields: [userId], references: [id])
+    departamento Departamentos? @relation(fields: [departamentoId], references: [id])
+    creator    Users?       @relation("creator", fields: [creatorId], references: [id])
+    itens      RelatorioItens[]
+}
+
+model RelatorioItens {
+    id         String   @id @default(uuid()) @map("id")
+    relatorioId String  @map("relatorio_id")
+    produtoId  String   @map("produto_id")
+    quantity   Float      @default(1) @map("quantity")
+    valor      Float    @map("valor")@default(0)
+    createdAt  DateTime @default(now()) @map("created_at")
+    updatedAt  DateTime @updatedAt @map("updated_at")
+
+    @@map("relatorio_itens")
+
+    relatorio Relatorios @relation(fields: [relatorioId], references: [id])
+    produto   Produtos   @relation(fields: [produtoId], references: [id])
+}
