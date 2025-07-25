@@ -279,6 +279,7 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
             username: true,
             email: true,
             isActive: true,
+            isSuperUser: true,
             cpf: true,
             createdAt: true,
             updatedAt: true
@@ -714,7 +715,7 @@ export const exportPdf = async (req: UserExportRequest, res: Response) => {
     return;
 };
 
-export const switchSuperUser = async (req: Request, res: Response) => {
+export const toggleSuperUser = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     if (!id) {
@@ -733,6 +734,12 @@ export const switchSuperUser = async (req: Request, res: Response) => {
         data: {
             isSuperUser: !userToEdit?.isSuperUser
         }
+    }).then(user => {
+        return res.status(200).json({
+            status: 200,
+            message: "Permissão de super usuário alterada com sucesso",
+            user
+        });
     }).catch(error => {
         res.status(500).json({
             status: 500,

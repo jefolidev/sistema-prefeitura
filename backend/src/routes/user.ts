@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { body } from "express-validator";
-import { getAllServidores, getAllUsers, getUserById, login, logout, myAccount, register, registerServidor } from "../controllers/UserControllers";
+import { getAllServidores, getAllUsers, getUserById, login, logout, myAccount, register, registerServidor, toggleSuperUser } from "../controllers/UserControllers";
 
 const userRoutes = Router();
 
@@ -64,6 +64,8 @@ userRoutes.post(
     "/logout",
     logout
 );
+
+userRoutes.patch("/toggleSuperUser/:id", toggleSuperUser);
 
 userRoutes.post(
     "/myaccount",

@@ -8,6 +8,7 @@ export type Users = {
     username: string;
     email: string;
     cpf: string;
+    isSuperUser: boolean
     permissions: UserPermissions[]
     isActive: boolean;
     createdAt: string;

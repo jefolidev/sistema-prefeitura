@@ -67,6 +67,7 @@ const endpoints = {
         activate: (id: string) => `/funcionarios/active/${id}`,
         edit: (id: string) => `/funcionarios/edit/${id}`,
         exportPdf: (id: string) => `/funcionarios/pdf/${id}`,
+        toggleSuperUser: (id: string) => `/user/toggleSuperUser/${id}`,
     },
     relatorios: {
         getAll: '/requisicao',
