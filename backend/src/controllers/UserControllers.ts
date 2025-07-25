@@ -30,8 +30,6 @@ export const login = async (req: LoginRequest, res: Response): Promise<void> => 
     ///Verifica se o user e password foram enviados
     const { user, senha } = req.body;
 
-    console.log("Recebi login:", user);
-
     const errorsFields = validationResult(req);
 
     if (!user || !senha) {
@@ -371,7 +369,21 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
             cpf: true,
             isActive: true,
             createdAt: true,
-            updatedAt: true
+            updatedAt: true,
+            permissions: {
+                where: { isEnabled: true },
+                select: {
+                    id: true,
+                    isEnabled: true,
+                    permission: {
+                        select: {
+                            id: true,
+                            name: true,
+                            routesToRestrict: true,
+                        }
+                    }
+                }
+            }
         }
     });
 
@@ -700,4 +712,32 @@ export const exportPdf = async (req: UserExportRequest, res: Response) => {
     }
 
     return;
+};
+
+export const switchSuperUser = async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    if (!id) {
+        res.status(404).json({
+            status: 404,
+            message: "ID não encontrado",
+        });
+    }
+
+    const userToEdit = await prisma.users.findFirst({
+        where: { id }
+    });
+
+    prisma.users.update({
+        where: { id },
+        data: {
+            isSuperUser: !userToEdit?.isSuperUser
+        }
+    }).catch(error => {
+        res.status(500).json({
+            status: 500,
+            message: "Houve um erro ao alterar a permissão do usuário.",
+            ...(application.type === "development" && { error })
+        });
+    });
 };
