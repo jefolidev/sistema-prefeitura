@@ -4,6 +4,7 @@ export type Permissions = {
   id: string
   name: string
   description: string
+  routesToRestrict: string[]
   createdAt: string;
   updatedAt: string;
 }

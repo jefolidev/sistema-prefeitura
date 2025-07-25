@@ -79,6 +79,7 @@ const endpoints = {
     permissoesUsuario: {
         getAll: "/permissoesUsuario",
         switchStatus: '/permissoesUsuario/switchStatus',
+        updateScreens: (id: string) => `/permissoesUsuario/updateScreens/${id}`,
         getUserPermissionsById: (id: string) => `/permissoesUsuario/${id}`,
     },
 }
