@@ -5,11 +5,13 @@ import { FormEvent, useContext, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
+import { jwtDecode } from "jwt-decode";
 import { toast } from "react-toastify";
-import { UserLoginResponseError, UserLoginResponseSuccess } from "../../@types/UserLogin.ts";
+import { JwtPayload, UserLoginResponseError, UserLoginResponseSuccess } from "../../@types/UserLogin.ts";
 import { Context } from "../../AuthContext.ts";
 import api from "../../utils/api";
 import endpoints from "../../utils/endpoints";
+
 
 const Login = () => {
     const navigate = useNavigate();
@@ -36,10 +38,16 @@ const Login = () => {
             senha: password
         }).then((response) => {
             const data = response.data as unknown as UserLoginResponseSuccess;
-
+            
             if(data.status === 200) {
+                const token = data.data
+
+                const decoded = jwtDecode<JwtPayload>(token);
+
                 localStorage.setItem("autenticado", "1");
-                localStorage.setItem("token", data.data);
+                localStorage.setItem("token", token);
+                localStorage.setItem("userId", decoded.id);
+                localStorage.setItem("isSuperAdmin", String(decoded.isSuperAdmin));
                 toast.success('Login efetuado com sucesso');
     
                 setAuthenticated(true);

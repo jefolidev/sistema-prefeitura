@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { BrowserRouter } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { Context } from "./AuthContext";
 import Loading from "./Components/Loading/Loading";
 import AuthenticatedRoutes from "./Routes/authenticated";
 import NotAuthenticatedRoutes from "./Routes/notAuthenticated";
+import { UserProvider } from "./context/UserContext";
 
 
 const App = () => {
@@ -28,8 +30,8 @@ const App = () => {
         }
 
         if(localStorage.getItem('token')){
-            ////jwt decode
             const token = localStorage.getItem('token');
+            
             if(!token) return;
             const payload = JSON.parse(atob(token.split('.')[1]));
             setIsSuperAdmin(payload.isSuperAdmin);
@@ -42,23 +44,26 @@ const App = () => {
     }, [])
 
     return (
-        <>
-            <Context.Provider value={{
-                setAuthenticated,
-                sidebar, setSidebar,
-                theme, setTheme,
-                loading, setLoading,
-                isSuperAdmin, name,
-                userName
-            }}>
-                {authenticated === null ? <Loading />: (
-                    authenticated ? (<AuthenticatedRoutes />): (<NotAuthenticatedRoutes />)
-                )}
-            </Context.Provider>
-            <ToastContainer />
+        <BrowserRouter>
+            <UserProvider>
+
+                <Context.Provider value={{
+                    setAuthenticated,
+                    sidebar, setSidebar,
+                    theme, setTheme,
+                    loading, setLoading,
+                    isSuperAdmin, name,
+                    userName
+                }}>
+                    {authenticated === null ? <Loading />: (
+                        authenticated ? (<AuthenticatedRoutes />): (<NotAuthenticatedRoutes />)
+                    )}
+                </Context.Provider>
+                <ToastContainer />
             
-            {loading && <Loading />}
-        </>
+                {loading && <Loading />}
+            </UserProvider>
+        </BrowserRouter>
     )
 }
 

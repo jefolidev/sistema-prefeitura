@@ -1,4 +1,5 @@
 import ResponseApiDefault from "./ResponseApiDefault";
+import { UserPermissions } from "./UserPermissions";
 
 export type Users = {
     id: string;
@@ -7,11 +8,12 @@ export type Users = {
     username: string;
     email: string;
     cpf: string;
+    permissions: UserPermissions[]
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
 }
-export interface UsersGetResponse extends ResponseApiDefault{
+export interface UsersGetResponse extends ResponseApiDefault {
     data: Users[]
 }
 

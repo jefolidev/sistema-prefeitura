@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Telas } from "../@types/Telas";
 import { Context } from "../AuthContext";
@@ -34,7 +34,6 @@ import api from "../utils/api";
 import endpoints from "../utils/endpoints";
 
 const AuthenticatedRoutes:React.FC = () => {
-
     const { setLoading } = useContext(Context);
 
     useEffect(() => {
@@ -49,61 +48,59 @@ const AuthenticatedRoutes:React.FC = () => {
 
     return (
         <>
-            <BrowserRouter>
-                <div className="d-flex" style={{height: "100vh"}}>
-                    <div className="col-auto">
-                        <Sidebar />
-                    </div>
-                    <div className="col">
-                        <Header />
-                        <Routes>
-                            <Route path="/" element={<Dashboard />} />
-                            <Route path={Telas.DEPARTAMENTOS}>
-                                <Route index element={<DepartamentosIndex />}/>
-                                <Route path="create" element={<CreateDepartamentoPage />}/>
-                                <Route path="edit/:id" element={<EditDepartamentoPage />}/>
-                            </Route>
-                            <Route path={Telas.FORNECEDORES}>
-                                <Route index element={<FornecedoresIndex />}/>
-                                <Route path="create" element={<CreateFornecedoresPage />}/>
-                                <Route path="edit/:id" element={<EditFornecedorPage />}/>
-                            </Route>
-                            <Route path={Telas.PRODUTOS}>
-                                <Route index element={<ProdutosIndex />}/>
-                                <Route path="create" element={<CreateProdutosPage />}/>
-                                <Route path="edit/:id" element={<EditProdutoPage />}/>
-                            </Route>
-                            <Route path={Telas.GRUPOS}>
-                                <Route index element={<GruposIndex />}/>
-                                <Route path="create" element={<CreateGruposPage />}/>
-                                <Route path="edit/:id" element={<EditGruposPage />}/>
-                            </Route>
-                            <Route path={Telas.REQUISICOES}>
-                                <Route index element={<RelatoriosIndex />}/>
-                                <Route path="create" element={<CreateRelatorioPage />}/>
-                                <Route path="view/:id" element={<ViewRelatorioPage />}/>
-                            </Route>
-                            <Route path={Telas.SERVIDORES}>
-                                <Route index element={<ServidoresIndex />}/>
-                                <Route path="create" element={<CreateServidorPage />}/>
-                                <Route path="edit/:id" element={<EditServidorPage />}/>
-                            </Route>
-                            <Route path={Telas.USUARIOS}>
-                                <Route index element={<UsersIndex />}/>
-                                <Route path="create" element={<CreateUsuariosPage />}/>
-                                <Route path="edit/:id" element={<EditUsuarioPage />}/>
-                            </Route>
-                            <Route path={Telas.PERMISSOES}>
-                                <Route index element={<PermissoesIndex />}/>
-                                <Route path="create" element={<CreatePermissoesPage />}/>
-                                <Route path="edit/:id" element={<EditPermissaoPage />}/>
-                            </Route>
-                            <Route path="*" element={<Navigate to="/" />} />
-                        </Routes>
-                    </div>
-                
+            <div className="d-flex" style={{height: "100vh"}}>
+                <div className="col-auto">
+                    <Sidebar />
                 </div>
-            </BrowserRouter>
+                <div className="col">
+                    <Header />
+                    <Routes>
+                        <Route path="/" element={<Dashboard />} />
+                        <Route path={Telas.DEPARTAMENTOS}>
+                            <Route index element={<DepartamentosIndex />}/>
+                            <Route path="create" element={<CreateDepartamentoPage />}/>
+                            <Route path="edit/:id" element={<EditDepartamentoPage />}/>
+                        </Route>
+                        <Route path={Telas.FORNECEDORES}>
+                            <Route index element={<FornecedoresIndex />}/>
+                            <Route path="create" element={<CreateFornecedoresPage />}/>
+                            <Route path="edit/:id" element={<EditFornecedorPage />}/>
+                        </Route>
+                        <Route path={Telas.PRODUTOS}>
+                            <Route index element={<ProdutosIndex />}/>
+                            <Route path="create" element={<CreateProdutosPage />}/>
+                            <Route path="edit/:id" element={<EditProdutoPage />}/>
+                        </Route>
+                        <Route path={Telas.GRUPOS}>
+                            <Route index element={<GruposIndex />}/>
+                            <Route path="create" element={<CreateGruposPage />}/>
+                            <Route path="edit/:id" element={<EditGruposPage />}/>
+                        </Route>
+                        <Route path={Telas.REQUISICOES}>
+                            <Route index element={<RelatoriosIndex />}/>
+                            <Route path="create" element={<CreateRelatorioPage />}/>
+                            <Route path="view/:id" element={<ViewRelatorioPage />}/>
+                        </Route>
+                        <Route path={Telas.SERVIDORES}>
+                            <Route index element={<ServidoresIndex />}/>
+                            <Route path="create" element={<CreateServidorPage />}/>
+                            <Route path="edit/:id" element={<EditServidorPage />}/>
+                        </Route>
+                        <Route path={Telas.USUARIOS}>
+                            <Route index element={<UsersIndex />}/>
+                            <Route path="create" element={<CreateUsuariosPage />}/>
+                            <Route path="edit/:id" element={<EditUsuarioPage />}/>
+                        </Route>
+                        <Route path={Telas.PERMISSOES}>
+                            <Route index element={<PermissoesIndex />}/>
+                            <Route path="create" element={<CreatePermissoesPage />}/>
+                            <Route path="edit/:id" element={<EditPermissaoPage />}/>
+                        </Route>
+                        <Route path="*" element={<Navigate to="/" />} />
+                    </Routes>
+                </div>
+                
+            </div>
         </>
     )
 }
