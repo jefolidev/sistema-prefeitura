@@ -1,6 +1,7 @@
 import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
 import application from "./config/application";
+import { getAllowedOrigins } from "./config/cors";
 import expressConfig from "./config/express";
 import routes from "./routes";
 import { logger } from "./shared/utils/logger";
@@ -9,7 +10,22 @@ const app = express();
 
 app.use(express.json());
 
-app.use(cors({ origin: true, credentials: true }));
+const allowedOrigins = getAllowedOrigins();
+
+if (allowedOrigins === "*") {
+    app.use(cors({ origin: true, credentials: true }));
+} else {
+    app.use(cors({
+        origin: function (origin, callback) {
+            if (!origin) return callback(null, true);
+            if (allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+            return callback(new Error("CORS não permitido"));
+        },
+        credentials: true,
+    }));
+}
 
 app.use(routes);
 
