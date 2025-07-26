@@ -7,3 +7,15 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: backend-pref
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+  backend:
+    build: .
+    container_name: backend-pref
+    environment:
+      DATABASE_URL: "postgresql://admin:admin@pg:5432/backend-pref"
+      URL_REDIS: "redis://redis:6379"
+    depends_on:
+      - pg

@@ -4,7 +4,7 @@ FROM node:20-slim
 # Evita prompts interativos
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Instale dependências necessárias para o Chromium (usado pelo Puppeteer)
+# Instale dependências necessárias para o Chromium (usado pelo Puppeteer) e netcat (nc)
 RUN apt-get update && apt-get install -y \
     wget \
     ca-certificates \
@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y \
     libxrandr2 \
     xdg-utils \
     chromium \
+    netcat-openbsd \
     --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
@@ -43,12 +44,9 @@ RUN npm install
 # Copie o restante do código da aplicação
 COPY . .
 
-# Gere e aplique o esquema Prisma
-RUN npx prisma generate && \
-    npx prisma migrate deploy
-
 # Exponha a porta usada pela aplicação
 EXPOSE 3000
 
-# Inicie a aplicação
-CMD ["npm", "start"]
+# Use o script start.sh para iniciar o container
+CMD ["sh", "./start.sh"]
+
