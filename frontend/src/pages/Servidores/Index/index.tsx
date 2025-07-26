@@ -11,7 +11,7 @@ import endpoints from "../../../utils/endpoints";
 
 const ServidoresIndex = () => {
 
-    const {setLoading, isSuperAdmin } = useContext(Context)
+    const {setLoading } = useContext(Context)
 
     const navigate = useNavigate();
     const [servidores, setServidores] = useState<Servidor[]>([]);
