@@ -1,13 +1,13 @@
-import { FiEdit, FiDownload } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
-import api from "../../../utils/api";
 import { useContext, useEffect, useState } from "react";
-import { Context } from "../../../AuthContext";
+import { FiDownload, FiEdit } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import ResponseApiDefault from "../../../@types/ResponseApiDefault";
-import endpoints from "../../../utils/endpoints";
 import { Servidor, ServidoresGetResponse } from "../../../@types/ServidoresRequests";
+import { Context } from "../../../AuthContext";
 import ExportModal from "../../../Components/ExportModal/ExportModal";
+import api from "../../../utils/api";
+import endpoints from "../../../utils/endpoints";
 
 const ServidoresIndex = () => {
 
@@ -92,11 +92,9 @@ const ServidoresIndex = () => {
                                     <FiEdit />
                                 </button>
                                 
-                                {isSuperAdmin && (
-                                    <button className="btn btn-success" onClick={() => { setExportId(servidor.id); setModalVisible(true); }}>
-                                        <FiDownload />
-                                    </button>
-                                )}
+                                <button className="btn btn-success" onClick={() => { setExportId(servidor.id); setModalVisible(true); }}>
+                                    <FiDownload />
+                                </button>
                             </td>
                         </tr>
                     ))}
