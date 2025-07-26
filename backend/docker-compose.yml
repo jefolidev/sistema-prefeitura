@@ -14,6 +14,8 @@ services:
   backend:
     build: .
     container_name: backend-pref
+    ports:
+    - "3000:3000" 
     environment:
       DATABASE_URL: "postgresql://admin:admin@pg:5432/backend-pref"
       URL_REDIS: "redis://redis:6379"
