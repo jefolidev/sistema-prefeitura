@@ -17,4 +17,9 @@ npx prisma migrate deploy
 
 echo "Subindo aplicação..."
 npm start
+
 echo "Aplicação iniciada com sucesso!"
+
+echo "Realizando seed do banco de dados"
+npm run db:seed
+echo "Seed gerado com sucesso!"

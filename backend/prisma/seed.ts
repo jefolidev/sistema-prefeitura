@@ -43,6 +43,7 @@ const prisma = new PrismaClient();
             surname: "admin",
             username: "admin123",
             email: "admin@example.com",
+            isSuperUser: true,
             password: hash,
         }
     }).then(() => {
