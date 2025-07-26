@@ -35,6 +35,7 @@ import endpoints from "../utils/endpoints";
 
 const AuthenticatedRoutes:React.FC = () => {
     const { setLoading } = useContext(Context);
+    const { isSuperAdmin } = useContext(Context)
 
     useEffect(() => {
         setLoading(true);
@@ -91,11 +92,12 @@ const AuthenticatedRoutes:React.FC = () => {
                             <Route path="create" element={<CreateUsuariosPage />}/>
                             <Route path="edit/:id" element={<EditUsuarioPage />}/>
                         </Route>
+                        {isSuperAdmin &&
                         <Route path={Telas.PERMISSOES}>
                             <Route index element={<PermissoesIndex />}/>
                             <Route path="create" element={<CreatePermissoesPage />}/>
                             <Route path="edit/:id" element={<EditPermissaoPage />}/>
-                        </Route>
+                        </Route>}
                         <Route path="*" element={<Navigate to="/" />} />
                     </Routes>
                 </div>

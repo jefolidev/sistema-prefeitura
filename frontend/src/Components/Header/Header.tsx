@@ -8,14 +8,17 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import noProfile from '../../assets/noProfile.png';
 import { Context } from '../../AuthContext';
+import { useUser } from '../../context/UserContext';
 import api from '../../utils/api';
 import endpoints from '../../utils/endpoints';
 import styleSidebar from '../Sidebar/Sidebar.module.css';
 
 const Header = () => {
-
     const {sidebar, setSidebar, theme, setTheme, setAuthenticated, setLoading, name, userName} = useContext(Context); 
+    const { user } = useUser()
     const navigate = useNavigate()
+
+    const isSuperUser = user?.isSuperUser
 
     const logout = () => {
         setLoading(true);
@@ -68,7 +71,7 @@ const Header = () => {
                                 <h6>{userName}</h6>
                             </div>
                             <CDropdownDivider />
-                            <CDropdownItem onClick={() => navigate("/permissoes")}> <CIcon icon={cilLockLocked}/> Permissões</CDropdownItem>
+                            {isSuperUser && <CDropdownItem onClick={() => navigate("/permissoes")}> <CIcon icon={cilLockLocked}/> Permissões</CDropdownItem>}
                             <CDropdownItem onClick={logout}><CIcon icon={cilPowerStandby} /> Desconectar</CDropdownItem>
                         </CDropdownMenu>
                     </CDropdown>

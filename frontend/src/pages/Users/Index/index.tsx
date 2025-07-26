@@ -6,6 +6,7 @@ import ResponseApiDefault from "../../../@types/ResponseApiDefault";
 import { Users, UsersGetResponse } from "../../../@types/UsersRequests";
 import { Context } from "../../../AuthContext";
 import ExportModal from "../../../Components/ExportModal/ExportModal";
+import { useUser } from "../../../context/UserContext";
 import api from "../../../utils/api";
 import endpoints from "../../../utils/endpoints";
 
@@ -17,6 +18,10 @@ const UsersIndex = () => {
     const [usuarios, setUsuarios] = useState<Users[]>([]);
     const [exportId, setExportId] = useState<string | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
+
+    const { user } = useUser()
+    const isSuperUser = user?.isSuperUser
+
 
     const exportPdf = (id: string, startDate: string, endDate: string, reportModel: string) => {
         setLoading(true);
@@ -100,9 +105,9 @@ const UsersIndex = () => {
         <div className="container-fluid p-3">
             <h1>Usuários</h1>
             <div className="mt-3">
-                <button className="btn btn-primary mb-3" onClick={() => navigate("/usuarios/create")}>
+                {isSuperAdmin && <button className="btn btn-primary mb-3" onClick={() => navigate("/usuarios/create")}>
                     Cadastrar Usuário
-                </button>
+                </button>}
             </div>
             <table className="table table-striped text-lg">
                 <thead>
@@ -112,7 +117,7 @@ const UsersIndex = () => {
                         <th className="text-nowrap">CPF</th>
                         <th className="text-nowrap">Criado em</th>
                         <th className="text-nowrap">Atualizado em</th>
-                        <th className="text-nowrap">Super usuario</th>
+                        {isSuperUser && <th className="text-nowrap">Super usuario</th>}
                         <th className="text-end text-nowrap"></th>
                     </tr>
                 </thead>
@@ -125,23 +130,25 @@ const UsersIndex = () => {
                             <td>{usuario.cpf}</td>
                             <td>{new Date(usuario.createdAt).toLocaleString('pt-br')}</td>
                             <td>{new Date(usuario.updatedAt).toLocaleString('pt-br')}</td>
-                            <td>  
+                            {isSuperAdmin && <td>  
                                 <input
                                     type="checkbox"
                                     checked={usuario.isSuperUser}
                                     onChange={() => toggleSuperUser(usuario.id)}
                                     className="sr-only peer"
                                 />
-                            </td>
+                            </td>}
                             <td>
-                                <button className="btn btn-secondary me-2" onClick={() => navigate(`/usuarios/edit/${usuario.id}`)}>
-                                    <FiEdit />
-                                </button>
-
                                 {isSuperAdmin && (
-                                    <button className="btn btn-success" onClick={() => { setExportId(usuario.id); setModalVisible(true); }}>
-                                        <FiDownload />
-                                    </button>
+                                    <>
+                                        <button className="btn btn-secondary me-2" onClick={() => navigate(`/usuarios/edit/${usuario.id}`)}>
+                                            <FiEdit />
+                                        </button>
+
+                                        <button className="btn btn-success" onClick={() => { setExportId(usuario.id); setModalVisible(true); }}>
+                                            <FiDownload />
+                                        </button>
+                                    </>
                                     
                                 )}
                             </td>
