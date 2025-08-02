@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import ResponseApiDefault from "../../@types/ResponseApiDefault";
 import { Users, UsersGetResponse } from "../../@types/UsersRequests";
 import { Context } from "../../auth-context";
-import ExportModal from "../../components/export-modal/export-modal";
+import ExportModal from "../../components/export-modal";
 import { useUser } from "../../context/user-context";
 import api from "../../utils/api";
 import endpoints from "../../utils/endpoints";

@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import ResponseApiDefault from "../../../@types/ResponseApiDefault";
 import { Secretarias, SecretariasGetResponse } from "../../../@types/SecretariasRequests";
 import { Context } from "../../auth-context";
-import ExportModal from "../../components/export-modal/export-modal";
+import ExportModal from "../../components/export-modal";
 import api from "../../utils/api";
 import endpoints from "../../utils/endpoints";
 

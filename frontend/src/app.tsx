@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { Context } from "./auth-context";
-import Loading from "./components/loading/loading";
+import Loading from "./components/loading";
 import { UserProvider } from "./context/user-context";
 import AuthenticatedRoutes from "./routes/authenticated";
 import NotAuthenticatedRoutes from "./routes/notAuthenticated";
