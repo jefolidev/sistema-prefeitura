@@ -1,10 +1,11 @@
 import { useContext, useEffect, useState } from "react";
-import { FiEye, FiPlus } from "react-icons/fi";
+import { FiDownload, FiEye, FiPlus } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Relatorio, RelatoriosGetResponse } from "../../@types/RelatoriosRequests";
 import ResponseApiDefault from "../../@types/ResponseApiDefault";
 import { Context } from "../../auth-context";
+import { Button } from "../../components/button";
 import api from "../../utils/api";
 import endpoints from "../../utils/endpoints";
 
@@ -39,6 +40,12 @@ const RelatoriosIndex = () => {
                 <button className="btn btn-primary mb-3" onClick={() => navigate("/requisicoes/create")}> 
                     <FiPlus className="me-2" />Criar Requisição
                 </button>
+                <Button
+                    label="Gerar relatorio"
+                    className={"mx-3 mb-3"}
+                    variant="outline"
+                    icon={<FiDownload/>}
+                />
             </div>
             <table className="table table-striped">
                 <thead>
