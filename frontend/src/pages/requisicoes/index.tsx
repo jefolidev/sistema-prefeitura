@@ -6,13 +6,18 @@ import { Relatorio, RelatoriosGetResponse } from "../../@types/RelatoriosRequest
 import ResponseApiDefault from "../../@types/ResponseApiDefault";
 import { Context } from "../../auth-context";
 import { Button } from "../../components/button";
+import { RequisitionModal } from "../../components/requisition-modal";
 import api from "../../utils/api";
 import endpoints from "../../utils/endpoints";
 
 const RelatoriosIndex = () => {
-    const navigate = useNavigate();
-    const { setLoading } = useContext(Context);
     const [relatorios, setRelatorios] = useState<Relatorio[]>([]);
+    const [modalVisible, setModalVisible] = useState(false);
+
+    const navigate = useNavigate();
+
+    const { setLoading } = useContext(Context);
+    
 
     const requestRelatorios = () => {
         setLoading(true);
@@ -37,14 +42,13 @@ const RelatoriosIndex = () => {
         <div className="container-fluid p-3">
             <h1>Requisição</h1>
             <div className="mt-3">
-                <button className="btn btn-primary mb-3" onClick={() => navigate("/requisicoes/create")}> 
-                    <FiPlus className="me-2" />Criar Requisição
-                </button>
+                <Button color="primary" className="mb-3" label="Criar Requisição" icon={<FiPlus />} onClick={() => navigate("/requisicoes/create")}/> 
                 <Button
                     label="Gerar relatorio"
                     className={"mx-3 mb-3"}
                     variant="outline"
                     icon={<FiDownload/>}
+                    onClick={() => setModalVisible(true)}
                 />
             </div>
             <table className="table table-striped">
@@ -74,6 +78,10 @@ const RelatoriosIndex = () => {
                 </tbody>
             </table>
             <div className="text-center">Total de Relatórios: {relatorios.length}</div>
+            <RequisitionModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+            />
         </div>
     );
 };
