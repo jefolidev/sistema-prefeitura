@@ -282,6 +282,13 @@ interface RequisitionGenerateReportRequest extends Request {
     body: RequisitionGenerateReportBody
 }
 
+interface GenerateReportResponse {
+    byDepartment: { departamentoId: string; total: number }[];
+    byGroup: { groupId: string; total: number }[];
+    byProvider: { providerId: string; total: number }[];
+    requisitionsOrganizedByProviders?: unknown;
+}
+
 export const generateReport = async (req: RequisitionGenerateReportRequest, res: Response): Promise<void> => {
     const parsed = requisitionGenerateReportBody.safeParse(req.body);
 
@@ -302,17 +309,19 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         return;
     }
 
-    const { startDate, endDate, isGroups, isDepartments, isProviders } = parsed.data;
+    const { startDate, endDate, isGroups, isDepartments, isProviders, shouldShowRequisitionByProviders } = parsed.data;
 
     try {
+        const queryDateFilter = {
+            ...(startDate && { createdAt: { gte: startDate } }),
+            ...(endDate && { createdAt: { lte: endDate } })
+        };
+
         const requisitions = await prisma.relatorios.findMany({
-            where: {
-                ...(startDate && { createdAt: { gte: startDate } }),
-                ...(endDate && { createdAt: { lte: endDate } })
-            },
+            where: queryDateFilter,
             include: {
-                fornecedor: isProviders ? { select: { id: true, name: true } } : false,
-                departamento: isDepartments ? { select: { id: true, name: true } } : false,
+                fornecedor: { select: { id: true, name: true } },
+                departamento: { select: { id: true, name: true } },
                 itens: true,
             }
         });
@@ -356,7 +365,7 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             }
         }
 
-        const result = {
+        const result: GenerateReportResponse = {
             byDepartment: Object.entries(spendByDepartment).map(([id, value]) => ({
                 departamentoId: id,
                 total: Number(value.toFixed(2))
@@ -371,6 +380,56 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             })),
         };
 
+        if (shouldShowRequisitionByProviders) {
+            const requisitionsByProvider = await prisma.relatorios.findMany({
+                where: queryDateFilter,
+                include: {
+                    fornecedor: { select: { id: true, name: true } },
+                    departamento: { select: { name: true } },
+                    itens: {
+                        include: {
+                            produto: { select: { name: true } }
+                        }
+                    }
+                }
+            });
+
+            type RequisitionByProviderItem = {
+                id: string;
+                department?: string;
+                date: string;
+                product: typeof requisitionsByProvider[number]["itens"][number];
+                unitPrice: number;
+                total: number;
+            };
+
+            const grouped: Record<string, { fornecedor: string, requisicoes: RequisitionByProviderItem[] }> = {};
+
+            for (const requisition of requisitionsByProvider) {
+                const fornecedor = requisition.fornecedor.name || "Fornecedor desconhecido";
+
+                if (!grouped[requisition.fornecedorId]) {
+                    grouped[requisition.fornecedorId] = {
+                        fornecedor,
+                        requisicoes: []
+                    };
+                }
+
+                for (const item of requisition.itens) {
+                    grouped[requisition.fornecedorId].requisicoes.push({
+                        id: requisition.id,
+                        department: requisition.departamento?.name,
+                        date: requisition.createdAt.toString().split("T")[0],
+                        product: item,
+                        unitPrice: Number(item.valor),
+                        total: Number(item.valor) * item.quantity
+                    });
+                }
+            }
+
+            result.requisitionsOrganizedByProviders = Object.values(grouped);
+        }
+
         res.status(200).json({
             status: 200,
             data: result
@@ -382,6 +441,4 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             ...(application.type === "development" && { error })
         });
     }
-
-
 };

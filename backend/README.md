@@ -27,7 +27,3 @@
     - Buscar na tabela de fornecedores os fornecedores correspondente ao id em tabela de relatorios
   - Para resgatar os precos gastos por fornecedores
     - 
-
-  - Problemas atuais: 
-    - Nao calcula o valor real, acredito que apenas o primeiro
-    
