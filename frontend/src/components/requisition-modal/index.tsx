@@ -1,5 +1,6 @@
 import { CFormCheck, CFormInput, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle } from "@coreui/react";
 import { useEffect, useState } from "react";
+import { Button } from "../button";
 import './styles/index.css';
 import { ExportRequisitionModalProps } from "./types";
 
@@ -97,13 +98,12 @@ export function RequisitionModal({visible, title, onClose}: ExportRequisitionMod
                 </div>
             </CModalBody>
             <CModalFooter>
-                <button className="btn btn-secondary" onClick={onClose}>Cancelar</button>
-                <button
-                    className="btn btn-primary"
+                <Button variant="outline" label="Cancelar" onClick={onClose}/>
+                <Button
+                    color="primary"
+                    label="Exportar"
                     // onClick={() => onExport(startDate, endDate, reportModel)}
-                >
-                      Exportar
-                </button>
+                />
             </CModalFooter>
         </CModal>
     );
