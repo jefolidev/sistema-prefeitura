@@ -1,13 +1,13 @@
+import { Prisma } from "@prisma/client";
 import { Request, Response } from "express";
 import fs from "fs";
 import path from "path";
 import puppeteer from "puppeteer";
-import { Prisma } from "@prisma/client";
 
-import { prisma } from "../shared/database/prisma";
-import application from "../config/application";
 import { FornecedoresCreateRequestBody, FornecedoresUpdateQuery } from "../@types/Fornecedores";
-import { generatePdf } from "../utils/generate_pdf";
+import application from "../config/application";
+import { prisma } from "../shared/database/prisma";
+import { generatePdf } from "../utils/generate-pdf";
 
 
 export const getAll = async (req: Request, res: Response): Promise<void> => {
@@ -21,7 +21,7 @@ export const getAll = async (req: Request, res: Response): Promise<void> => {
         res.status(500).json({
             status: 500,
             message: "Erro ao buscar fornecedores",
-            ...(application.type == "development" && {error: error}),
+            ...(application.type == "development" && { error: error }),
         });
     });
 };
@@ -55,7 +55,7 @@ export const getById = async (req: FornecedorGetByIdRequest, res: Response): Pro
         res.status(500).json({
             status: 500,
             message: "Erro ao buscar fornecedor",
-            ...(application.type == "development" && {error: error}),
+            ...(application.type == "development" && { error: error }),
         });
     });
 
@@ -97,7 +97,7 @@ export const create = async (req: FornecedorCreateRequest, res: Response): Promi
         res.status(500).json({
             status: 500,
             message: "Erro ao criar fornecedor",
-            ...(application.type == "development" && {error: error}),
+            ...(application.type == "development" && { error: error }),
         });
     });
 
@@ -143,7 +143,7 @@ export const update = async (req: FornecedorUpdateRequest, res: Response): Promi
         res.status(500).json({
             status: 500,
             message: "Erro ao atualizar fornecedor",
-            ...(application.type == "development" && {error: error}),
+            ...(application.type == "development" && { error: error }),
         });
     });
 };
@@ -168,7 +168,7 @@ export const remove = async (req: FornecedorDeleteRequest, res: Response): Promi
         res.status(500).json({
             status: 500,
             message: "Erro ao remover fornecedor",
-            ...(application.type == "development" && {error: error}),
+            ...(application.type == "development" && { error: error }),
         });
     });
 };
@@ -267,10 +267,10 @@ export const exportPdf = async (req: Request, res: Response): Promise<void> => {
 export const exportProdutosPdf = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params as { id?: string };
-        const { 
-            startDate, 
-            endDate:endDate_, 
-            reportModel 
+        const {
+            startDate,
+            endDate: endDate_,
+            reportModel
         } = req.query as { startDate?: string; endDate?: string, reportModel?: string };
 
         if (!id) {
@@ -348,10 +348,10 @@ export const exportProdutosPdf = async (req: Request, res: Response): Promise<vo
             where: { id: String(id) },
             select: { name: true }
         });
-        
+
         const buffer = await generatePdf(
             produtos,
-            `Relatório de Produtos do Fornecedor "${fornecedor?.name ||"(Sem nome)"}" ${startDate ? ` de ${new Date(startDate).toLocaleDateString("pt-br")}` : ""}${endDate ? ` até ${new Date(endDate).toLocaleDateString("pt-br")}` : ""}`,
+            `Relatório de Produtos do Fornecedor "${fornecedor?.name || "(Sem nome)"}" ${startDate ? ` de ${new Date(startDate).toLocaleDateString("pt-br")}` : ""}${endDate ? ` até ${new Date(endDate).toLocaleDateString("pt-br")}` : ""}`,
             reportModel || "default"
         );
 

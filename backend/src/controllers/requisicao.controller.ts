@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../shared/database/prisma";
 import application from "../config/application";
 import { RequisicaoCreateRequestBody, RequisicaoCancelQuery, RequisicaoQuery } from "../@types/Requisicoes";
-import { generateRelatorioPdf } from "../utils/generate_relatorio_pdf";
+import { generateRelatorioPdf } from "../utils/generate-relatorio-pdf";
 import { JwtUser } from "../@types/User";
 
 interface RequisicaoCreateRequest extends Request {

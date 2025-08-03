@@ -7,12 +7,12 @@ import application from "../config/application";
 import { JwtUser, ServidorRegisterRequestBody, UserLoginRequest, UserRegisterRequest } from "../@types/User";
 
 import auth from "../config/auth";
-import CreateHash from "../services/BcryptServices/CreateHash";
-import Validate from "../services/BcryptServices/Validate";
+import CreateHash from "../services/bcrypt-services/create-hash";
+import Validate from "../services/bcrypt-services/validate";
 import { prisma } from "../shared/database/prisma";
 import redis from "../shared/database/redis";
 import { logger } from "../shared/utils/logger";
-import { generatePdf } from "../utils/generate_pdf";
+import { generatePdf } from "../utils/generate-pdf";
 
 interface LoginRequest extends Request {
     body: UserLoginRequest;

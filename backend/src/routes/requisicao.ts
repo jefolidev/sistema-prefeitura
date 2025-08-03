@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { create, getAll, getById, cancel, exportPdf } from "../controllers/RequisicaoControllers";
+import { create, getAll, getById, cancel, exportPdf } from "../controllers/requisicao.controller";
 
 const requisicaoRoutes = Router();
 

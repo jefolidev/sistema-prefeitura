@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { activeAndInactiveUser, exportPdf, getAllUsers, getUserById, register, updateServidor, updateUser } from "../controllers/UserControllers";
+import { activeAndInactiveUser, exportPdf, getAllUsers, getUserById, register, updateServidor, updateUser } from "../controllers/user.controller";
 
 const funcionariosRoutes = Router();
 
@@ -24,7 +24,7 @@ funcionariosRoutes.put(
 );
 
 funcionariosRoutes.put(
-    "/edit/:id", 
+    "/edit/:id",
     updateUser
 );
 

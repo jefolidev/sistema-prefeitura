@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { create, exportPdf, exportProdutosPdf, getAll, getById, remove, update } from "../controllers/FornecedorControllers";
+import { create, exportPdf, exportProdutosPdf, getAll, getById, remove, update } from "../controllers/fornecedor.controller";
 
 const fornecedoresRoutes = Router();
 

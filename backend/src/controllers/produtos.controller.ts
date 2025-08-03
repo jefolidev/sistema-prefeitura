@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 
-import { prisma } from "../shared/database/prisma";
-import application from "../config/application";
 import { ProdutosCreateRequestBody, ProdutosUpdateQuery } from "../@types/Produtos";
-import { generatePdf } from "../utils/generate_pdf";
+import application from "../config/application";
+import { prisma } from "../shared/database/prisma";
+import { generatePdf } from "../utils/generate-pdf";
 
 interface getAllRequest extends Request {
     query: {
@@ -78,14 +78,14 @@ interface ProdutosCreateRequest extends Request {
     body: ProdutosCreateRequestBody;
 }
 export const create = async (req: ProdutosCreateRequest, res: Response): Promise<void> => {
-    const { 
+    const {
         name, description,
         fornecedorId, departamentoId,
         unidadeMedida, valor, grupoId
     } = req.body;
 
     if (
-        !name ||  !fornecedorId ||
+        !name || !fornecedorId ||
         !unidadeMedida || valor === undefined ||
         !grupoId
     ) {
@@ -127,9 +127,9 @@ interface ProdutosUpdateRequest extends Request {
 }
 export const update = async (req: ProdutosUpdateRequest, res: Response): Promise<void> => {
     const { id } = req.params;
-    const { 
-        name, description,  
-        quantity, fornecedorId, departamentoId, 
+    const {
+        name, description,
+        quantity, fornecedorId, departamentoId,
         unidadeMedida, valor, grupoId
     } = req.body;
 
@@ -267,7 +267,7 @@ export const exportPdf = async (req: ProdutosExportPdfRequest, res: Response): P
                 };
             };
         }[];
-        
+
         const buffer = await generatePdf(
             produtos,
             `Relatório de Produtos${startDate ? ` de ${new Date(startDate).toLocaleDateString("pt-br")}` : ""}${endDate ? ` até ${new Date(endDate).toLocaleDateString("pt-br")}` : ""}`,
