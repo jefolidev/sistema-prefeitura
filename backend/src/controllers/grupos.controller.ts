@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { GruposCreateRequestBody, GruposUpdateQuery } from "../@types/Grupos";
+import { GruposCreateRequestBody, GruposUpdateQuery } from "../@types/grupos";
 import application from "../config/application";
 import { prisma } from "../shared/database/prisma";
 import { generatePdf } from "../utils/generate-pdf";

@@ -1,19 +1,19 @@
 import { Request, Response } from "express";
-import { prisma } from "../shared/database/prisma";
+import { RequisicaoCancelQuery, RequisicaoCreateRequestBody, RequisicaoQuery, RequisitionGenerateReportBody, requisitionGenerateReportBody } from "../@types/requisicoes";
+import { JwtUser } from "../@types/user";
 import application from "../config/application";
-import { RequisicaoCreateRequestBody, RequisicaoCancelQuery, RequisicaoQuery } from "../@types/Requisicoes";
+import { prisma } from "../shared/database/prisma";
 import { generateRelatorioPdf } from "../utils/generate-relatorio-pdf";
-import { JwtUser } from "../@types/User";
 
 interface RequisicaoCreateRequest extends Request {
     body: RequisicaoCreateRequestBody;
 }
 
 export const create = async (req: RequisicaoCreateRequest, res: Response): Promise<void> => {
-    const { fornecedorId, departamentoId, userId, nameRetirante, observacoes:observacao, itens } = req.body;
+    const { fornecedorId, departamentoId, userId, nameRetirante, observacoes: observacao, itens } = req.body;
 
     const token = req.headers["x-access-token"] as string;
-    let tokenData:JwtUser|null = null;
+    let tokenData: JwtUser | null = null;
     if (token) {
         try {
             const base64Payload = token.split(".")[1];
@@ -27,7 +27,7 @@ export const create = async (req: RequisicaoCreateRequest, res: Response): Promi
             return;
         }
     }
-    
+
 
     if (!fornecedorId || !userId || !nameRetirante || !Array.isArray(itens) || itens.length === 0) {
         res.status(400).json({
@@ -52,7 +52,7 @@ export const create = async (req: RequisicaoCreateRequest, res: Response): Promi
             where: { id: { in: productIds } },
             select: { id: true, fornecedorId: true }
         });
-        
+
         if (products.length !== productIds.length) {
             res.status(400).json({
                 status: 400,
@@ -276,4 +276,113 @@ export const cancel = async (req: RequisicaoCancelRequest, res: Response): Promi
             ...(application.type === "development" && { error })
         });
     }
+};
+
+interface RequisitionGenerateReportRequest extends Request {
+    body: RequisitionGenerateReportBody
+}
+
+export const generateReport = async (req: RequisitionGenerateReportRequest, res: Response): Promise<void> => {
+    const parsed = requisitionGenerateReportBody.safeParse(req.body);
+
+    if (!parsed.success) {
+        res.status(400).json({
+            status: 400,
+            message: "Invalid request data.",
+            issues: parsed.error.format(),
+        });
+    }
+
+    if (!parsed.data) {
+        res.status(400).json({
+            status: 400,
+            message: "Invalid request data.",
+            issues: parsed.error.format(),
+        });
+        return;
+    }
+
+    const { startDate, endDate, isGroups, isDepartments, isProviders } = parsed.data;
+
+    try {
+        const requisitions = await prisma.relatorios.findMany({
+            where: {
+                ...(startDate && { createdAt: { gte: startDate } }),
+                ...(endDate && { createdAt: { lte: endDate } })
+            },
+            include: {
+                fornecedor: isProviders ? { select: { id: true, name: true } } : false,
+                departamento: isDepartments ? { select: { id: true, name: true } } : false,
+                itens: true,
+            }
+        });
+
+        const spendByDepartment: Record<string, number> = {};
+        const spendByGroup: Record<string, number> = {};
+        const spendByProvider: Record<string, number> = {};
+
+        for (const requisition of requisitions) {
+            const { fornecedorId, departamentoId, itens } = requisition;
+
+            const total = itens.reduce((acc, item) => acc + (Number(item.valor) * item.quantity), 0);
+
+            if (isProviders) {
+                if (!spendByProvider[fornecedorId]) {
+                    spendByProvider[fornecedorId] = 0;
+                }
+
+                spendByProvider[fornecedorId] += total;
+            }
+            
+            if (isDepartments)
+                if (departamentoId) {
+                    spendByDepartment[departamentoId] = (spendByDepartment[departamentoId] ?? 0) + total;
+                }
+
+            if (isGroups) {
+                const produtos = await Promise.all(
+                    itens.map(item => prisma.produtos.findFirst({ where: { id: item.produtoId } }))
+                );
+
+                for (let i = 0; i < itens.length; i++) {
+                    const item = itens[i];
+                    const produto = produtos[i];
+
+                    if (!produto || !produto.grupoId) continue;
+
+                    spendByGroup[produto.grupoId] =
+                        (spendByGroup[produto.grupoId] ?? 0) + (Number(item.valor) * item.quantity);
+                }
+            }
+
+        }
+
+        console.log("📂 Gastos por Departamento:");
+        for (const [id, total] of Object.entries(spendByDepartment)) {
+            const dep = requisitions.find(r => r.departamentoId === id)?.departamento;
+            const label = dep ? `${dep.name} (${dep.id})` : id;
+            console.log(`→ ${label}: R$ ${total.toFixed(2)}`);
+        }
+
+        console.log("\n📦 Gastos por Grupo:");
+        for (const [id, total] of Object.entries(spendByGroup)) {
+            console.log(`→ Grupo ${id}: R$ ${total.toFixed(2)}`);
+        }
+
+        console.log("\n🚚 Gastos por Fornecedor:");
+        for (const [id, total] of Object.entries(spendByProvider)) {
+            const forn = requisitions.find(r => r.fornecedorId === id)?.fornecedor;
+            const label = forn ? `${forn.name} (${forn.id})` : id;
+            console.log(`→ ${label}: R$ ${total.toFixed(2)}`);
+        }
+
+    } catch (error) {
+        res.status(500).json({
+            status: 500,
+            message: "Erro ao gerar relatorio",
+            ...(application.type === "development" && { error })
+        });
+    }
+
+
 };

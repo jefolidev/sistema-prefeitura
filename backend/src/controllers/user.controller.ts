@@ -4,7 +4,7 @@ import { sign, verify } from "jsonwebtoken";
 
 import application from "../config/application";
 
-import { JwtUser, ServidorRegisterRequestBody, UserLoginRequest, UserRegisterRequest } from "../@types/User";
+import { JwtUser, ServidorRegisterRequestBody, UserLoginRequest, UserRegisterRequest } from "../@types/user";
 
 import auth from "../config/auth";
 import CreateHash from "../services/bcrypt-services/create-hash";

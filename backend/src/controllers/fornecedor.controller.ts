@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import puppeteer from "puppeteer";
 
-import { FornecedoresCreateRequestBody, FornecedoresUpdateQuery } from "../@types/Fornecedores";
+import { FornecedoresCreateRequestBody, FornecedoresUpdateQuery } from "../@types/fornecedores";
 import application from "../config/application";
 import { prisma } from "../shared/database/prisma";
 import { generatePdf } from "../utils/generate-pdf";

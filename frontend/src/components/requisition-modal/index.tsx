@@ -10,7 +10,7 @@ export function RequisitionModal({ visible, title, onClose }: ExportRequisitionM
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
-    const { register, handleSubmit, setValue, watch, getFieldState } = useForm({
+    const { register, handleSubmit, setValue, watch } = useForm({
         resolver: zodResolver(generateReportRequestSchema)
     });
 

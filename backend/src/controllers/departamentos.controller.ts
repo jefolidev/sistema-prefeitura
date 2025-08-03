@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { DepartamentosCreateRequestBody, DepartamentosUpdateQuery } from "../@types/Departamentos";
+import { DepartamentosCreateRequestBody, DepartamentosUpdateQuery } from "../@types/departamentos";
 import application from "../config/application";
 import { prisma } from "../shared/database/prisma";
 import { generatePdf } from "../utils/generate-pdf";

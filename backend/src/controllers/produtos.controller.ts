@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { ProdutosCreateRequestBody, ProdutosUpdateQuery } from "../@types/Produtos";
+import { ProdutosCreateRequestBody, ProdutosUpdateQuery } from "../@types/produtos";
 import application from "../config/application";
 import { prisma } from "../shared/database/prisma";
 import { generatePdf } from "../utils/generate-pdf";
