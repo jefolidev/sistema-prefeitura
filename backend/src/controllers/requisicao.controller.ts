@@ -333,7 +333,7 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
 
                 spendByProvider[fornecedorId] += total;
             }
-            
+
             if (isDepartments)
                 if (departamentoId) {
                     spendByDepartment[departamentoId] = (spendByDepartment[departamentoId] ?? 0) + total;
@@ -354,28 +354,27 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
                         (spendByGroup[produto.grupoId] ?? 0) + (Number(item.valor) * item.quantity);
                 }
             }
-
         }
 
-        console.log("📂 Gastos por Departamento:");
-        for (const [id, total] of Object.entries(spendByDepartment)) {
-            const dep = requisitions.find(r => r.departamentoId === id)?.departamento;
-            const label = dep ? `${dep.name} (${dep.id})` : id;
-            console.log(`→ ${label}: R$ ${total.toFixed(2)}`);
-        }
+        const result = {
+            byDepartment: Object.entries(spendByDepartment).map(([id, value]) => ({
+                departamentoId: id,
+                total: Number(value.toFixed(2))
+            })),
+            byGroup: Object.entries(spendByGroup).map(([id, value]) => ({
+                groupId: id,
+                total: Number(value.toFixed(2))
+            })),
+            byProvider: Object.entries(spendByProvider).map(([id, value]) => ({
+                providerId: id,
+                total: Number(value.toFixed(2))
+            })),
+        };
 
-        console.log("\n📦 Gastos por Grupo:");
-        for (const [id, total] of Object.entries(spendByGroup)) {
-            console.log(`→ Grupo ${id}: R$ ${total.toFixed(2)}`);
-        }
-
-        console.log("\n🚚 Gastos por Fornecedor:");
-        for (const [id, total] of Object.entries(spendByProvider)) {
-            const forn = requisitions.find(r => r.fornecedorId === id)?.fornecedor;
-            const label = forn ? `${forn.name} (${forn.id})` : id;
-            console.log(`→ ${label}: R$ ${total.toFixed(2)}`);
-        }
-
+        res.status(200).json({
+            status: 200,
+            data: result
+        });
     } catch (error) {
         res.status(500).json({
             status: 500,
