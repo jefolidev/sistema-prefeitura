@@ -36,3 +36,47 @@ export type RequisicaoCancelQuery = {
 
 export type RequisicaoQuery = { id: string; };
 
+type ReponseByDepartment = { departamentoId: string; total: number }[];
+type ReponseByGroup = { groupId: string; total: number }[];
+type ReponseByProvider = { providerId: string; total: number }[];
+
+type RequisitionProduct = {
+    id: string;
+    relatorioId: string;
+    produtoId: string;
+    quantity: number;
+    valor: number;
+    createdAt: string;
+    updatedAt: string;
+    produto: {
+        name: string;
+    };
+};
+
+export type RequisitionItem = {
+    id: string;
+    department: string;
+    date: string;
+    product: RequisitionProduct;
+    unitPrice: number;
+    total: number;
+};
+
+type RequisitionByProvider = {
+    fornecedor: string;
+    requisicoes: RequisitionItem[];
+};
+
+type ShouldShowRequisitionByProviders = RequisitionByProvider[];
+
+export interface GenerateReportResponse {
+    byDepartment: ReponseByDepartment;
+    byGroup: ReponseByGroup;
+    byProvider: ReponseByProvider;
+    shouldShowRequisitionByProviders?: ShouldShowRequisitionByProviders
+    shouldShowAllExpensesByProviderInPeriod?: { providerId: string; startDate: Date, endDate: Date, total: number }[];
+    shouldShowHowMuchEachDepartmentSpentWithEachProvider?: unknown;
+    shouldShowHowHasBeenSpentedByGroupInDepartments?: unknown;
+    shouldShowValuesSpentedByGroups?: unknown;
+    shouldShowDetailedItemsByEachGroup?: unknown;
+}

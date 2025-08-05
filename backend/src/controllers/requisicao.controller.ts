@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { RequisicaoCancelQuery, RequisicaoCreateRequestBody, RequisicaoQuery, RequisitionGenerateReportBody, requisitionGenerateReportBody } from "../@types/requisicoes";
+import { GenerateReportResponse, RequisicaoCancelQuery, RequisicaoCreateRequestBody, RequisicaoQuery, RequisitionGenerateReportBody, requisitionGenerateReportBody, RequisitionItem } from "../@types/requisicoes";
 import { JwtUser } from "../@types/user";
 import application from "../config/application";
 import { prisma } from "../shared/database/prisma";
@@ -46,7 +46,6 @@ export const create = async (req: RequisicaoCreateRequest, res: Response): Promi
     }
 
     try {
-        // verify all products belong to fornecedor
         const productIds = [...new Set(itens.map(i => i.produtoId))];
         const products = await prisma.produtos.findMany({
             where: { id: { in: productIds } },
@@ -282,13 +281,6 @@ interface RequisitionGenerateReportRequest extends Request {
     body: RequisitionGenerateReportBody
 }
 
-interface GenerateReportResponse {
-    byDepartment: { departamentoId: string; total: number }[];
-    byGroup: { groupId: string; total: number }[];
-    byProvider: { providerId: string; total: number }[];
-    requisitionsOrganizedByProviders?: unknown;
-}
-
 export const generateReport = async (req: RequisitionGenerateReportRequest, res: Response): Promise<void> => {
     const parsed = requisitionGenerateReportBody.safeParse(req.body);
 
@@ -309,7 +301,15 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         return;
     }
 
-    const { startDate, endDate, isGroups, isDepartments, isProviders, shouldShowRequisitionByProviders } = parsed.data;
+    const {
+        startDate,
+        endDate,
+        isGroups,
+        isDepartments,
+        isProviders,
+        shouldShowRequisitionByProviders,
+        shouldShowAllExpensesByProviderInPeriod
+    } = parsed.data;
 
     try {
         const queryDateFilter = {
@@ -330,42 +330,47 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         const spendByGroup: Record<string, number> = {};
         const spendByProvider: Record<string, number> = {};
 
+        let allExpensesByProviderInPeriod: { providerId: string; total: number }[] | undefined = undefined;
+
         for (const requisition of requisitions) {
             const { fornecedorId, departamentoId, itens } = requisition;
-
             const total = itens.reduce((acc, item) => acc + (Number(item.valor) * item.quantity), 0);
 
             if (isProviders) {
-                if (!spendByProvider[fornecedorId]) {
-                    spendByProvider[fornecedorId] = 0;
-                }
-
-                spendByProvider[fornecedorId] += total;
+                spendByProvider[fornecedorId] = (spendByProvider[fornecedorId] ?? 0) + total;
             }
 
-            if (isDepartments)
-                if (departamentoId) {
-                    spendByDepartment[departamentoId] = (spendByDepartment[departamentoId] ?? 0) + total;
-                }
+            if (isDepartments && departamentoId) {
+                spendByDepartment[departamentoId] = (spendByDepartment[departamentoId] ?? 0) + total;
+            }
 
             if (isGroups) {
                 const produtos = await Promise.all(
                     itens.map(item => prisma.produtos.findFirst({ where: { id: item.produtoId } }))
                 );
-
                 for (let i = 0; i < itens.length; i++) {
                     const item = itens[i];
                     const produto = produtos[i];
-
                     if (!produto || !produto.grupoId) continue;
-
                     spendByGroup[produto.grupoId] =
                         (spendByGroup[produto.grupoId] ?? 0) + (Number(item.valor) * item.quantity);
                 }
             }
         }
 
-        const result: GenerateReportResponse = {
+        if (shouldShowAllExpensesByProviderInPeriod) {
+            allExpensesByProviderInPeriod = Object.entries(spendByProvider).map(([id, value]) => ({
+                providerId: id,
+                startDate,
+                endDate,
+                total: Number(value.toFixed(2))
+            }));
+        }
+
+        const result: GenerateReportResponse & {
+            allExpensesByProviderInPeriod?:
+            { providerId: string; total: number }[]
+        } = {
             byDepartment: Object.entries(spendByDepartment).map(([id, value]) => ({
                 departamentoId: id,
                 total: Number(value.toFixed(2))
@@ -374,10 +379,13 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
                 groupId: id,
                 total: Number(value.toFixed(2))
             })),
-            byProvider: Object.entries(spendByProvider).map(([id, value]) => ({
-                providerId: id,
-                total: Number(value.toFixed(2))
-            })),
+            byProvider: isProviders
+                ? Object.entries(spendByProvider).map(([id, value]) => ({
+                    providerId: id,
+                    total: Number(value.toFixed(2))
+                }))
+                : [],
+            ...(allExpensesByProviderInPeriod && { allExpensesByProviderInPeriod })
         };
 
         if (shouldShowRequisitionByProviders) {
@@ -394,16 +402,7 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
                 }
             });
 
-            type RequisitionByProviderItem = {
-                id: string;
-                department?: string;
-                date: string;
-                product: typeof requisitionsByProvider[number]["itens"][number];
-                unitPrice: number;
-                total: number;
-            };
-
-            const grouped: Record<string, { fornecedor: string, requisicoes: RequisitionByProviderItem[] }> = {};
+            const grouped: Record<string, { fornecedor: string, requisicoes: RequisitionItem[] }> = {};
 
             for (const requisition of requisitionsByProvider) {
                 const fornecedor = requisition.fornecedor.name || "Fornecedor desconhecido";
@@ -418,16 +417,20 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
                 for (const item of requisition.itens) {
                     grouped[requisition.fornecedorId].requisicoes.push({
                         id: requisition.id,
-                        department: requisition.departamento?.name,
+                        department: requisition.departamento?.name ?? "Departamento desconhecido",
                         date: requisition.createdAt.toString().split("T")[0],
-                        product: item,
+                        product: {
+                            ...item,
+                            createdAt: item.createdAt.toISOString(),
+                            updatedAt: item.updatedAt.toISOString()
+                        },
                         unitPrice: Number(item.valor),
                         total: Number(item.valor) * item.quantity
                     });
                 }
             }
 
-            result.requisitionsOrganizedByProviders = Object.values(grouped);
+            result.shouldShowRequisitionByProviders = Object.values(grouped);
         }
 
         res.status(200).json({
@@ -437,7 +440,7 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
     } catch (error) {
         res.status(500).json({
             status: 500,
-            message: "Erro ao gerar relatorio",
+            message: `Erro ao gerar relatorio, ${error}`,
             ...(application.type === "development" && { error })
         });
     }
