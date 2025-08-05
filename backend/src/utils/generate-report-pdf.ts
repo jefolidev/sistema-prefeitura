@@ -1,11 +1,11 @@
 import fs from "fs";
 import path from "path";
 import puppeteer from "puppeteer";
-import { DetailedItemsByEachGroup, ShouldShowRequisitionByProviders } from "../@types/requisicoes";
 
-export type RelatorioData = {
+// Tipagem para os dados que o generateRelatorioPdf recebe
+export interface RelatorioData {
   seq: number;
-  fornecedor: { name: string };
+  fornecedores: { name: string; total: number }[]
   user: { name: string };
   creator: { id: string; name: string } | null;
   nameRetirante: string | null;
@@ -26,7 +26,27 @@ export type RelatorioData = {
   byDepartment?: { departamentoId: string; name: string; total: number }[];
   byProvider?: { providerId: string; name: string; total: number }[];
 
-  shouldShowRequisitionByProviders?: ShouldShowRequisitionByProviders
+  shouldShowRequisitionByProviders?: {
+    fornecedor: string;
+    requisicoes: {
+      id: string;
+      department: string;
+      date: string; // ISO ou string que vira date
+      product: {
+        produto: { name: string };
+        quantity: number;
+      };
+      unitPrice: number;
+      total: number;
+    }[];
+  }[];
+
+  shouldShowAllExpensesByProviderInPeriod?: {
+    providerId: string;
+    startDate: Date | string;
+    endDate: Date | string;
+    total: number;
+  }[];
 
   shouldShowHowMuchEachDepartmentSpentWithEachProvider?: {
     departmentId: string;
@@ -36,191 +56,216 @@ export type RelatorioData = {
 
   shouldShowHowHasBeenSpentedByGroupInDepartments?: Record<string, Record<string, number>>;
 
-  shouldShowDetailedItemsByEachGroup?: DetailedItemsByEachGroup;
+  shouldShowDetailedItemsByEachGroup?: Record<
+    string,
+    {
+      produto: string;
+      unitPrice: number;
+    }[]
+  >;
 
-  // Flags to toggle blocks
+  // Flags para mostrar blocos no PDF
   showByGroup?: boolean;
   showByDepartment?: boolean;
   showByProvider?: boolean;
   showRequisitionByProviders?: boolean;
   showHowMuchEachDepartmentSpentWithEachProvider?: boolean;
   showDetailedItemsByEachGroup?: boolean;
-};
+}
+
 
 const formatCurrency = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-function replaceSection(
-  html: string,
-  startTag: string,
-  endTag: string,
-  replacement: string
-): string {
+function replaceSection(html: string, startTag: string, endTag: string, replacement: string): string {
   const regex = new RegExp(`${startTag}[\\s\\S]*?${endTag}`, "g");
   return html.replace(regex, replacement || "");
 }
 
-export const generateRelatorioPdf = async (
-  relatorio: RelatorioData
-): Promise<Buffer> => {
+export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Promise<Buffer> => {
   const htmlPath = path.resolve("src/relatorio-dinamico.html");
   let html = fs.readFileSync(htmlPath, "utf-8");
 
   // Substituições fixas
-  const total = relatorio.itens.reduce((acc, i) => acc + i.quantity * i.valor, 0);
-  html = html.replace(/\$\{\{ID_SEQUENCIAL\}\}/g, String(relatorio.seq).padStart(7, "0"));
-  html = html.replace(/\$\{\{FORNECEDOR\}\}/g, relatorio.fornecedor.name);
   html = html.replace(/\$\{\{CRIADOR\}\}/g, relatorio.user.name);
-  html = html.replace(/\$\{\{AUTORIZADO_POR\}\}/g, relatorio.creator?.name ?? "Desconhecido");
-  html = html.replace(/\$\{\{RETIRANTE\}\}/g, relatorio.nameRetirante ?? "");
-  html = html.replace(/\$\{\{OBSERVACOES\}\}/g, relatorio.observacao ?? "(Sem observações)");
-  html = html.replace(/\$\{\{VALOR_TOTAL\}\}/g, formatCurrency(total));
   html = html.replace(/\$\{\{DATA_HORA\}\}/g, relatorio.createdAt.toLocaleString("pt-BR"));
 
-  // Itens fixos (exemplo: mostra no máximo 9 itens)
-  const rows = Array.from({ length: 9 })
-    .map((_, idx) => {
-      const item = relatorio.itens[idx];
-      if (!item) return "<tr><td></td><td></td><td></td><td></td><td></td></tr>";
-      return `<tr>
-        <td>${item.quantity.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
-        <td>${item.produto.unidadeMedida}</td>
-        <td>${item.produto.name}</td>
-        <td>${formatCurrency(item.valor)}</td>
-        <td>${formatCurrency(item.valor * item.quantity)}</td>
-      </tr>`;
-    })
-    .join("\n");
-  html = html.replace(/<!-- START_FIXED_ITEMS -->[\s\S]*?<!-- END_FIXED_ITEMS -->/, rows);
-
-  // 1. Gastos por grupo
-  if (relatorio.showByGroup && relatorio.byGroup && relatorio.byGroup.length) {
-    const groupRows = relatorio.byGroup
-      .map((group) => `<tr><td>${group.name}</td><td>${formatCurrency(group.total)}</td></tr>`)
+  // 1. Resumo por Fornecedor
+  if (relatorio.fornecedores) {
+    const rows = relatorio.fornecedores.map(p => `<tr><td>${p.name}</td><td>${formatCurrency(p.total)}</td></tr>`)
       .join("\n");
+
     html = replaceSection(
       html,
-      "<!-- START_GROUP_SPENT_BLOCK -->",
-      "<!-- END_GROUP_SPENT_BLOCK -->",
-      `<table border="1" cellpadding="4" cellspacing="0">
-          <thead><tr><th>Grupo</th><th>Valor Gasto</th></tr></thead>
-          <tbody>${groupRows}</tbody>
-        </table>`
+      "<!-- START_SUMMARY_BY_PROVIDER -->",
+      "<!-- END_SUMMARY_BY_PROVIDER -->",
+      `<table><thead><tr><th>Nome do Fornecedor</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table>`
     );
   } else {
-    html = replaceSection(html, "<!-- START_GROUP_SPENT_BLOCK -->", "<!-- END_GROUP_SPENT_BLOCK -->", "");
+    html = replaceSection(html, "<!-- START_SUMMARY_BY_PROVIDER -->", "<!-- END_SUMMARY_BY_PROVIDER -->", "");
   }
 
-  // 2. Itens detalhados por grupo
-  if (relatorio.showDetailedItemsByEachGroup && relatorio.shouldShowDetailedItemsByEachGroup) {
-    const groupsHtml = Object.entries(relatorio.shouldShowDetailedItemsByEachGroup)
-      .map(([groupName, items]) => {
-        const itemsHtml = items
-          .map((i) => `<li>${i.produto} - ${formatCurrency(i.unitPrice)}</li>`)
-          .join("\n");
-        return `<h3>${groupName}</h3><ul>${itemsHtml}</ul>`;
-      })
+  // 2. Resumo por Departamento
+  if (relatorio.byDepartment && relatorio.byDepartment.length) {
+    const rows = relatorio.byDepartment
+      .map(d => `<tr><td>${d.name}</td><td>${formatCurrency(d.total)}</td></tr>`)
       .join("\n");
-    html = replaceSection(html, "<!-- START_DETAILED_ITEMS_BLOCK -->", "<!-- END_DETAILED_ITEMS_BLOCK -->", groupsHtml);
+
+    html = replaceSection(
+      html,
+      "<!-- START_SUMMARY_BY_DEPARTMENT -->",
+      "<!-- END_SUMMARY_BY_DEPARTMENT -->",
+      `<table><thead><tr><th>Nome do Departamento</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table>`
+    );
   } else {
-    html = replaceSection(html, "<!-- START_DETAILED_ITEMS_BLOCK -->", "<!-- END_DETAILED_ITEMS_BLOCK -->", "");
+    html = replaceSection(html, "<!-- START_SUMMARY_BY_DEPARTMENT -->", "<!-- END_SUMMARY_BY_DEPARTMENT -->", "");
   }
 
-  // 3. Requisições por fornecedor
-  if (relatorio.showRequisitionByProviders && relatorio.shouldShowRequisitionByProviders) {
+  // 3. Resumo por Grupo
+  if (relatorio.byGroup && relatorio.byGroup.length) {
+    const rows = relatorio.byGroup
+      .map(g => `<tr><td>${g.name}</td><td>${formatCurrency(g.total)}</td></tr>`)
+      .join("\n");
+
+    html = replaceSection(
+      html,
+      "<!-- START_SUMMARY_BY_GROUP -->",
+      "<!-- END_SUMMARY_BY_GROUP -->",
+      `<table><thead><tr><th>Nome do Grupo</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table>`
+    );
+  } else {
+    html = replaceSection(html, "<!-- START_SUMMARY_BY_GROUP -->", "<!-- END_SUMMARY_BY_GROUP -->", "");
+  }
+
+  // 4. Requisições feitas por provedores
+  if (relatorio.showRequisitionByProviders
+    && relatorio.shouldShowRequisitionByProviders
+    && relatorio.shouldShowRequisitionByProviders.length) {
     const requisicoesHtml = relatorio.shouldShowRequisitionByProviders
-      .map((providerBlock) => {
-        const itensHtml = providerBlock.requisicoes
-          .map(
-            (req) => `<tr>
-            <td>${req.date}</td>
+      .map(providerBlock => {
+        const requisicoesRows = providerBlock.requisicoes
+          .map(req => `<tr>
+            <td>${req.id}</td>
             <td>${req.department}</td>
+            <td>${new Date(req.date).toLocaleDateString("pt-BR")}</td>
             <td>${req.product.produto.name}</td>
             <td>${req.product.quantity}</td>
             <td>${formatCurrency(req.unitPrice)}</td>
             <td>${formatCurrency(req.total)}</td>
-          </tr>`
-          )
+          </tr>`)
           .join("\n");
+
         return `<h3>Fornecedor: ${providerBlock.fornecedor}</h3>
           <table border="1" cellpadding="4" cellspacing="0">
             <thead>
               <tr>
-                <th>Data</th>
-                <th>Departamento</th>
-                <th>Produto</th>
-                <th>Qtd</th>
-                <th>Preço Unit.</th>
-                <th>Total</th>
+                <th>ID</th><th>Departamento</th><th>Data</th><th>Produto</th><th>Quantidade</th><th>Preço Unitário</th><th>Total</th>
               </tr>
             </thead>
-            <tbody>${itensHtml}</tbody>
+            <tbody>${requisicoesRows}</tbody>
           </table>`;
-      })
-      .join("\n");
+      }).join("\n");
+
     html = replaceSection(html, "<!-- START_REQUISITIONS_BY_PROVIDER -->", "<!-- END_REQUISITIONS_BY_PROVIDER -->", requisicoesHtml);
   } else {
     html = replaceSection(html, "<!-- START_REQUISITIONS_BY_PROVIDER -->", "<!-- END_REQUISITIONS_BY_PROVIDER -->", "");
   }
 
-  // 4. Quanto cada departamento gastou com cada fornecedor
-  if (
-    relatorio.showHowMuchEachDepartmentSpentWithEachProvider &&
-    relatorio.shouldShowHowMuchEachDepartmentSpentWithEachProvider &&
-    relatorio.shouldShowHowMuchEachDepartmentSpentWithEachProvider.length
-  ) {
-    const rows = relatorio.shouldShowHowMuchEachDepartmentSpentWithEachProvider
-      .map(
-        (item) => `<tr>
-        <td>${item.departmentId}</td>
-        <td>${item.providerId}</td>
-        <td>${formatCurrency(item.total)}</td>
-      </tr>`
-      )
+  // 5. Gastos por Fornecedores em um Período
+  if (relatorio.shouldShowAllExpensesByProviderInPeriod && relatorio.shouldShowAllExpensesByProviderInPeriod.length) {
+    const rows = relatorio.shouldShowAllExpensesByProviderInPeriod
+      .map(e => `<tr>
+        <td>${e.providerId}</td>
+        <td>${formatCurrency(e.total)}</td>
+        <td>${new Date(e.startDate).toLocaleDateString("pt-BR")}</td>
+        <td>${new Date(e.endDate).toLocaleDateString("pt-BR")}</td>
+      </tr>`)
       .join("\n");
 
     html = replaceSection(
       html,
-      "<!-- START_DEPT_PROVIDER_SPENT -->",
-      "<!-- END_DEPT_PROVIDER_SPENT -->",
+      "<!-- START_EXPENSES_BY_PROVIDER_PERIOD -->",
+      "<!-- END_EXPENSES_BY_PROVIDER_PERIOD -->",
+      `<table border="1" cellpadding="4" cellspacing="0">
+        <thead><tr><th>Fornecedor</th><th>Gastos</th><th>Data Inicial</th><th>Data Final</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`
+    );
+  } else {
+    html = replaceSection(html, "<!-- START_EXPENSES_BY_PROVIDER_PERIOD -->", "<!-- END_EXPENSES_BY_PROVIDER_PERIOD -->", "");
+  }
+
+  // 6. Gastos de Departamento por Fornecedor
+  if (relatorio.showHowMuchEachDepartmentSpentWithEachProvider
+    && relatorio.shouldShowHowMuchEachDepartmentSpentWithEachProvider
+    && relatorio.shouldShowHowMuchEachDepartmentSpentWithEachProvider.length) {
+    const rows = relatorio.shouldShowHowMuchEachDepartmentSpentWithEachProvider
+      .map(item => `<tr>
+        <td>${item.departmentId}</td>
+        <td>${item.providerId}</td>
+        <td>${formatCurrency(item.total)}</td>
+      </tr>`)
+      .join("\n");
+
+    html = replaceSection(
+      html,
+      "<!-- START_EXPENSES_DEPARTMENT_BY_PROVIDER -->",
+      "<!-- END_EXPENSES_DEPARTMENT_BY_PROVIDER -->",
       `<table border="1" cellpadding="4" cellspacing="0">
         <thead><tr><th>Departamento</th><th>Fornecedor</th><th>Total Gasto</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>`
     );
   } else {
-    html = replaceSection(html, "<!-- START_DEPT_PROVIDER_SPENT -->", "<!-- END_DEPT_PROVIDER_SPENT -->", "");
+    html = replaceSection(html, "<!-- START_EXPENSES_DEPARTMENT_BY_PROVIDER -->", "<!-- END_EXPENSES_DEPARTMENT_BY_PROVIDER -->", "");
   }
 
-  // 5. Gastos por grupo dentro de departamentos
-  if (
-    relatorio.shouldShowHowHasBeenSpentedByGroupInDepartments
-  ) {
-    const groupsInDepartmentsHtml = Object.entries(
-      relatorio.shouldShowHowHasBeenSpentedByGroupInDepartments
-    )
+  // 7. Gastos por Grupos de Departamentos
+  if (relatorio.shouldShowHowHasBeenSpentedByGroupInDepartments) {
+    const groupsInDepartmentsHtml = Object.entries(relatorio.shouldShowHowHasBeenSpentedByGroupInDepartments)
       .map(([dept, groups]) => {
         const rows = Object.entries(groups)
-          .map(
-            ([groupName, total]) =>
-              `<tr><td>${groupName}</td><td>${formatCurrency(total)}</td></tr>`
-          )
+          .map(([groupName, total]) => `<tr><td>${groupName}</td><td>${formatCurrency(total)}</td></tr>`)
           .join("\n");
-        return `<h4>Departamento: ${dept}</h4><table border="1" cellpadding="4" cellspacing="0"><thead><tr><th>Grupo</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table>`;
+        return `<h4>Departamento: ${dept}</h4>
+          <table border="1" cellpadding="4" cellspacing="0">
+            <thead><tr><th>Grupo</th><th>Total</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>`;
       })
       .join("\n");
 
     html = replaceSection(
       html,
-      "<!-- START_GROUP_IN_DEPT_SPENT -->",
-      "<!-- END_GROUP_IN_DEPT_SPENT -->",
+      "<!-- START_EXPENSES_GROUPS_BY_DEPARTMENT -->",
+      "<!-- END_EXPENSES_GROUPS_BY_DEPARTMENT -->",
       groupsInDepartmentsHtml
     );
   } else {
-    html = replaceSection(html, "<!-- START_GROUP_IN_DEPT_SPENT -->", "<!-- END_GROUP_IN_DEPT_SPENT -->", "");
+    html = replaceSection(html, "<!-- START_EXPENSES_GROUPS_BY_DEPARTMENT -->", "<!-- END_EXPENSES_GROUPS_BY_DEPARTMENT -->", "");
   }
 
-  // Tudo pronto, gera o PDF
+  // 8. Produtos por Grupo
+  if (relatorio.showDetailedItemsByEachGroup && relatorio.shouldShowDetailedItemsByEachGroup) {
+    const groupsHtml = Object.entries(relatorio.shouldShowDetailedItemsByEachGroup)
+      .map(([groupName, items]) => {
+        const itemsHtml = items
+          .map(i => `<tr><td>${i.produto}</td><td>${formatCurrency(i.unitPrice)}</td></tr>`)
+          .join("\n");
+        return `<h3>${groupName}</h3>
+          <table border="1" cellpadding="4" cellspacing="0">
+            <thead><tr><th>Nome do Produto</th><th>Valor Unitário</th></tr></thead>
+            <tbody>${itemsHtml}</tbody>
+          </table>`;
+      })
+      .join("\n");
+
+    html = replaceSection(html, "<!-- START_PRODUCTS_BY_GROUP -->", "<!-- END_PRODUCTS_BY_GROUP -->", groupsHtml);
+  } else {
+    html = replaceSection(html, "<!-- START_PRODUCTS_BY_GROUP -->", "<!-- END_PRODUCTS_BY_GROUP -->", "");
+  }
+
+  // Gerar PDF com puppeteer
   const browser = await puppeteer.launch({
     headless: "new",
     args: ["--no-sandbox", "--disable-setuid-sandbox"],

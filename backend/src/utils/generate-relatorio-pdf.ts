@@ -2,16 +2,6 @@ import fs from "fs";
 import path from "path";
 import puppeteer from "puppeteer";
 
-export type RelatorioData = {
-    seq: number;
-    fornecedor: { name: string };
-    user: { name: string };
-    creator: { id:string; name: string } | null;
-    nameRetirante: string | null;
-    observacao: string | null;
-    itens: { quantity: number; valor: number, produto: { name: string; unidadeMedida: string; valor: number } }[];
-    createdAt: Date;
-};
 
 export const generateRelatorioPdf = async (relatorio: RelatorioData): Promise<Buffer> => {
     const htmlPath = path.resolve("src/relatorio.html");
