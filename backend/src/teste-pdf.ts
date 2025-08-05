@@ -69,6 +69,21 @@ async function main() {
       }
     ],
 
+    shouldShowAllExpensesByProviderInPeriod: [
+      {
+        providerId: "c55f450e-5562-436b-8168-4ce61f6ce4e2",
+        startDate: "2025-07-01T00:00:00.000Z",
+        endDate: "2025-08-31T23:59:59.000Z",
+        total: 261,
+      },
+      {
+        providerId: "7629378a-f226-44c2-8e6a-0471093438eb",
+        startDate: "2025-07-01T00:00:00.000Z",
+        endDate: "2025-08-31T23:59:59.000Z",
+        total: 69.9,
+      }
+    ],
+
     shouldShowDetailedItemsByEachGroup: {
       "Grupo A": [
         {

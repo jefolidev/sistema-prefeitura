@@ -285,14 +285,6 @@ interface RequisitionGenerateReportRequest extends Request {
 export const generateReport = async (req: RequisitionGenerateReportRequest, res: Response): Promise<void> => {
     const parsed = requisitionGenerateReportBody.safeParse(req.body);
 
-    if (!parsed.success) {
-        res.status(400).json({
-            status: 400,
-            message: "Invalid request data.",
-            issues: parsed.error.format(),
-        });
-    }
-
     if (!parsed.data) {
         res.status(400).json({
             status: 400,
@@ -301,6 +293,15 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         });
         return;
     }
+
+    if (!parsed.success) {
+        res.status(400).json({
+            status: 400,
+            message: "Invalid request data.",
+        });
+        return;
+    }
+
 
     const {
         startDate,
@@ -539,6 +540,7 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             result.shouldShowDetailedItemsByEachGroup = detailedItemsByGroup;
         }
 
+
         // Monta o objeto do tipo RelatorioData para gerar PDF
         const relatorioParaPdf: RelatorioData = {
             seq: 1, // ou algum ID sequencial real
@@ -589,7 +591,7 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             data: result,
             pdf: pdfBuffer.toString("base64")
         });
-
+        
     } catch (error) {
         res.status(500).json({
             status: 500,

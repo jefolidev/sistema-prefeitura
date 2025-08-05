@@ -2,6 +2,16 @@ import fs from "fs";
 import path from "path";
 import puppeteer from "puppeteer";
 
+export type RelatorioData = {
+    seq: number;
+    fornecedor: { name: string };
+    user: { name: string };
+    creator: { id: string; name: string } | null;
+    nameRetirante: string | null;
+    observacao: string | null;
+    itens: { quantity: number; valor: number, produto: { name: string; unidadeMedida: string; valor: number } }[];
+    createdAt: Date;
+};
 
 export const generateRelatorioPdf = async (relatorio: RelatorioData): Promise<Buffer> => {
     const htmlPath = path.resolve("src/relatorio.html");
@@ -14,7 +24,7 @@ export const generateRelatorioPdf = async (relatorio: RelatorioData): Promise<Bu
         const item = relatorio.itens[idx];
         if (!item) return "<tr><td></td><td></td><td></td><td></td><td></td></tr>";
         return `<tr>
-            <td>${item.quantity.toLocaleString("pt-br", {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td>${item.quantity.toLocaleString("pt-br", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
             <td>${item.produto.unidadeMedida}</td>
             <td>${item.produto.name}</td>
             <td>R$ ${format(item.valor)}</td>
@@ -31,7 +41,7 @@ export const generateRelatorioPdf = async (relatorio: RelatorioData): Promise<Bu
     html = html.replace(/\$\{\{AUTORIZADO_POR\}\}/g, relatorio.creator?.name ?? "Desconhecido");
     html = html.replace(/\$\{\{RETIRANTE\}\}/g, relatorio.nameRetirante ?? "");
     html = html.replace(/\$\{\{OBSERVACOES\}\}/g, relatorio.observacao ?? "(Sem observações)");
-    html = html.replace(/\$\{\{VALOT_TOTAL\}\}/g, "R$ "+format(total));
+    html = html.replace(/\$\{\{VALOT_TOTAL\}\}/g, "R$ " + format(total));
     html = html.replace(/\$\{\{DATA\/HORA\}\}/g, relatorio.createdAt.toLocaleString("pt-BR"));
 
     const browser = await puppeteer.launch({ headless: "new", args: ["--no-sandbox", "--disable-setuid-sandbox"] });
