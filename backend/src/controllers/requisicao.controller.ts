@@ -46,7 +46,7 @@ export const create = async (req: RequisicaoCreateRequest, res: Response): Promi
     }
 
     try {
-        const productIds = [...new Set(itens.map(i => i.produtoId))];
+        const productIds = [...new Set(itens.map(i => i.productId))];
         const products = await prisma.produtos.findMany({
             where: { id: { in: productIds } },
             select: { id: true, fornecedorId: true }
@@ -86,9 +86,9 @@ export const create = async (req: RequisicaoCreateRequest, res: Response): Promi
                 creatorId,
                 itens: {
                     create: itens.map(item => ({
-                        produtoId: item.produtoId,
+                        productId: item.productId,
                         quantity: item.quantity,
-                        valor: precos.find(p => p.id === item.produtoId)?.valor || 0
+                        valor: precos.find(p => p.id === item.productId)?.valor || 0
                     }))
                 }
             },
@@ -310,7 +310,8 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         shouldShowRequisitionByProviders,
         shouldShowAllExpensesByProviderInPeriod,
         shouldShowHowMuchEachDepartmentSpentWithEachProvider,
-        shouldShowHowHasBeenSpentedByGroupInDepartments
+        shouldShowHowHasBeenSpentedByGroupInDepartments,
+        shouldShowDetailedItemsByEachGroup,
     } = parsed.data;
 
     try {
@@ -379,7 +380,7 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
 
             if (isGroups) {
                 const produtos = await Promise.all(
-                    itens.map(item => prisma.produtos.findFirst({ where: { id: item.produtoId } }))
+                    itens.map(item => prisma.produtos.findFirst({ where: { id: item.productId } }))
                 );
                 for (let i = 0; i < itens.length; i++) {
                     const item = itens[i];
@@ -490,15 +491,51 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
                 }
 
                 for (const item of requisition.itens) {
-                    const grupoName = item.produto?.grupo?.name ?? "Sem grupo";
+                    const groupName = item.produto?.grupo?.name ?? "Sem grupo";
                     const total = Number(item.valor) * item.quantity;
 
-                    spendByGroupInDepartment[departmentName][grupoName] =
-                        (spendByGroupInDepartment[departmentName][grupoName] ?? 0) + total;
+                    spendByGroupInDepartment[departmentName][groupName] =
+                        (spendByGroupInDepartment[departmentName][groupName] ?? 0) + total;
                 }
             }
 
             result.shouldShowHowHasBeenSpentedByGroupInDepartments = spendByGroupInDepartment;
+        }
+
+        if (shouldShowDetailedItemsByEachGroup) {
+            const detailedItemsByGroup: Record<string, {
+                produto: string;
+                unitPrice: number;
+            }[]> = {};
+
+            const alreadyAdded = new Set<string>(); // pra garantir unicidade
+
+            for (const requisition of requisitions) {
+                for (const item of requisition.itens) {
+                    const productId = item.produto?.id;
+                    const groupName = item.produto?.grupo?.name ?? "Sem grupo";
+                    const productName = item.produto?.name ?? "Sem nome";
+                    const unitPrice = Number(item.valor);
+
+                    if (!productId) continue;
+
+                    const key = `${groupName}-${productId}`;
+                    if (alreadyAdded.has(key)) continue;
+
+                    alreadyAdded.add(key);
+
+                    if (!detailedItemsByGroup[groupName]) {
+                        detailedItemsByGroup[groupName] = [];
+                    }
+
+                    detailedItemsByGroup[groupName].push({
+                        produto: productName,
+                        unitPrice,
+                    });
+                }
+            }
+
+            result.shouldShowDetailedItemsByEachGroup = detailedItemsByGroup;
         }
 
         res.status(200).json({
