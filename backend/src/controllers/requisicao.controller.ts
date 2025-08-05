@@ -46,13 +46,13 @@ export const create = async (req: RequisicaoCreateRequest, res: Response): Promi
     }
 
     try {
-        const productIds = [...new Set(itens.map(i => i.productId))];
+        const produtoIds = [...new Set(itens.map(i => i.produtoId))];
         const products = await prisma.produtos.findMany({
-            where: { id: { in: productIds } },
+            where: { id: { in: produtoIds } },
             select: { id: true, fornecedorId: true }
         });
 
-        if (products.length !== productIds.length) {
+        if (products.length !== produtoIds.length) {
             res.status(400).json({
                 status: 400,
                 message: "Produtos invalidos"
@@ -70,7 +70,7 @@ export const create = async (req: RequisicaoCreateRequest, res: Response): Promi
         }
 
         const precos = await prisma.produtos.findMany({
-            where: { id: { in: productIds } },
+            where: { id: { in: produtoIds } },
             select: { id: true, valor: true }
         });
 
@@ -86,9 +86,9 @@ export const create = async (req: RequisicaoCreateRequest, res: Response): Promi
                 creatorId,
                 itens: {
                     create: itens.map(item => ({
-                        productId: item.productId,
+                        produtoId: item.produtoId,
                         quantity: item.quantity,
-                        valor: precos.find(p => p.id === item.productId)?.valor || 0
+                        valor: precos.find(p => p.id === item.produtoId)?.valor || 0
                     }))
                 }
             },
@@ -380,7 +380,7 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
 
             if (isGroups) {
                 const produtos = await Promise.all(
-                    itens.map(item => prisma.produtos.findFirst({ where: { id: item.productId } }))
+                    itens.map(item => prisma.produtos.findFirst({ where: { id: item.produtoId } }))
                 );
                 for (let i = 0; i < itens.length; i++) {
                     const item = itens[i];
@@ -512,14 +512,14 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
 
             for (const requisition of requisitions) {
                 for (const item of requisition.itens) {
-                    const productId = item.produto?.id;
+                    const produtoId = item.produto?.id;
                     const groupName = item.produto?.grupo?.name ?? "Sem grupo";
                     const productName = item.produto?.name ?? "Sem nome";
                     const unitPrice = Number(item.valor);
 
-                    if (!productId) continue;
+                    if (!produtoId) continue;
 
-                    const key = `${groupName}-${productId}`;
+                    const key = `${groupName}-${produtoId}`;
                     if (alreadyAdded.has(key)) continue;
 
                     alreadyAdded.add(key);

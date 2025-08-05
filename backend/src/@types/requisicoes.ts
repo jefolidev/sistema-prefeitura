@@ -10,7 +10,6 @@ export const requisitionGenerateReportBody = z.object({
     shouldShowAllExpensesByProviderInPeriod: z.boolean().optional(),
     shouldShowHowMuchEachDepartmentSpentWithEachProvider: z.boolean().optional(),
     shouldShowHowHasBeenSpentedByGroupInDepartments: z.boolean().optional(),
-    shouldShowValuesSpentedByGroups: z.boolean().optional(),
     shouldShowDetailedItemsByEachGroup: z.boolean().optional(),
 });
 
