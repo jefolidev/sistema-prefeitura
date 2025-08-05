@@ -4,6 +4,7 @@ import { JwtUser } from "../@types/user";
 import application from "../config/application";
 import { prisma } from "../shared/database/prisma";
 import { generateRelatorioPdf } from "../utils/generate-relatorio-pdf";
+import { RelatorioData } from "../utils/generate-report-pdf";
 
 interface RequisicaoCreateRequest extends Request {
     body: RequisicaoCreateRequestBody;
@@ -538,10 +539,57 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             result.shouldShowDetailedItemsByEachGroup = detailedItemsByGroup;
         }
 
+        // Monta o objeto do tipo RelatorioData para gerar PDF
+        const relatorioParaPdf: RelatorioData = {
+            seq: 1, // ou algum ID sequencial real
+            fornecedor: { name: "Fornecedor Exemplo" }, // ajuste conforme seu dado real
+            user: { name: "Usuário Exemplo" }, // idem
+            creator: null, // ou preencha se tiver
+            nameRetirante: null,
+            observacao: null,
+            itens: requisitions.flatMap(r =>
+                r.itens.map(i => ({
+                    quantity: i.quantity,
+                    valor: Number(i.valor),
+                    produto: {
+                        name: i.produto.name,
+                        unidadeMedida: "UN", // se tiver no seu dado, senão fixo
+                        valor: Number(i.valor),
+                        grupo: i.produto.grupo ? { name: i.produto.grupo.name } : undefined,
+                    },
+                }))
+            ),
+            createdAt: new Date(),
+            byGroup: result.byGroup?.map(g => ({ groupId: g.groupId, name: g.groupId, total: g.total })) || [],
+            byDepartment: result.byDepartment?.map(d => ({
+                departamentoId: d.departamentoId, name: d.departamentoId, total: d.total
+            })) || [],
+            byProvider: result.byProvider?.map(p => ({
+                providerId: p.providerId, name: p.providerId, total: p.total
+            })) || [],
+            shouldShowRequisitionByProviders: result.shouldShowRequisitionByProviders,
+            shouldShowHowMuchEachDepartmentSpentWithEachProvider:
+                result.shouldShowHowMuchEachDepartmentSpentWithEachProvider,
+            shouldShowHowHasBeenSpentedByGroupInDepartments: result.shouldShowHowHasBeenSpentedByGroupInDepartments,
+            shouldShowDetailedItemsByEachGroup: result.shouldShowDetailedItemsByEachGroup,
+            showByGroup: !!result.byGroup?.length,
+            showByDepartment: !!result.byDepartment?.length,
+            showByProvider: !!result.byProvider?.length,
+            showRequisitionByProviders: !!result.shouldShowRequisitionByProviders,
+            showHowMuchEachDepartmentSpentWithEachProvider:
+                !!result.shouldShowHowMuchEachDepartmentSpentWithEachProvider,
+            showDetailedItemsByEachGroup: !!result.shouldShowDetailedItemsByEachGroup,
+        };
+
+        // Gera o PDF (buffer)
+        const pdfBuffer = await generateRelatorioPdf(relatorioParaPdf);
+
         res.status(200).json({
             status: 200,
-            data: result
+            data: result,
+            pdf: pdfBuffer.toString("base64")
         });
+
     } catch (error) {
         res.status(500).json({
             status: 500,
