@@ -35,9 +35,9 @@ export type RequisicaoCancelQuery = {
 
 export type RequisicaoQuery = { id: string; };
 
-type ReponseByDepartment = { departamentoId: string; total: number }[];
-type ReponseByGroup = { groupId: string; total: number }[];
-type ReponseByProvider = { providerId: string; total: number }[];
+type ReponseByDepartment = { departamentoId: string; departamentoName: string; total: number }[];
+type ReponseByGroup = { groupId: string; grupoName: string; total: number }[];
+type ReponseByProvider = { providerId: string; providerName: string; total: number }[];
 
 type RequisitionProduct = {
     id: string;
@@ -70,7 +70,9 @@ export type ShouldShowRequisitionByProviders = RequisitionByProvider[];
 
 type HowMuchEachDepartmentSpentWithEachProviders = {
     departmentId: string;
+    departmentName: string;
     providerId: string;
+    providerName: string;
     total: number;
 }[]
 
@@ -79,13 +81,12 @@ export type DetailedItemsByEachGroup = Record<string, {
     unitPrice: number;
 }[]>
 
-
 export interface GenerateReportResponse {
     byDepartment: ReponseByDepartment;
     byGroup: ReponseByGroup;
     byProvider: ReponseByProvider;
     shouldShowRequisitionByProviders?: ShouldShowRequisitionByProviders
-    shouldShowAllExpensesByProviderInPeriod?: { providerId: string; startDate: Date, endDate: Date, total: number }[];
+    shouldShowAllExpensesByProviderInPeriod?: { providerId: string; providerName: string; total: number }[];
     shouldShowHowMuchEachDepartmentSpentWithEachProvider?: HowMuchEachDepartmentSpentWithEachProviders;
     shouldShowHowHasBeenSpentedByGroupInDepartments?: Record<string, Record<string, number>>;
     shouldShowDetailedItemsByEachGroup?: DetailedItemsByEachGroup;

@@ -302,7 +302,6 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         return;
     }
 
-
     const {
         startDate,
         endDate,
@@ -322,10 +321,12 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             ...(endDate && { createdAt: { lte: endDate } })
         };
 
+        // Pega as requisições
         const requisitions = await prisma.relatorios.findMany({
             where: queryDateFilter,
             include: {
                 departamento: { select: { id: true, name: true } },
+                fornecedor: { select: { id: true, name: true } },
                 itens: {
                     include: {
                         produto: {
@@ -345,34 +346,51 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             }
         });
 
+        // Monta mapas pra id => nome
+        const departmentMap = new Map<string, string>();
+        const groupMap = new Map<string, string>();
+        const providerMap = new Map<string, string>();
+
+        // Preenche os mapas com os dados das requisições (departamentos, grupos, fornecedores)
+        for (const req of requisitions) {
+            if (req.departamento?.id && req.departamento.name) {
+                departmentMap.set(req.departamento.id, req.departamento.name);
+            }
+            if (req.fornecedor?.id && req.fornecedor.name) {
+                providerMap.set(req.fornecedor.id, req.fornecedor.name);
+            }
+            for (const item of req.itens) {
+                const grupo = item.produto?.grupo;
+                if (grupo?.id && grupo.name) {
+                    groupMap.set(grupo.id, grupo.name);
+                }
+            }
+        }
+
         const spendByDepartment: Record<string, number> = {};
         const spendByGroup: Record<string, number> = {};
         const spendByProvider: Record<string, number> = {};
 
         const spendByDepartmentAndProvider: Record<string, Record<string, number>> = {};
 
-        let allExpensesByProviderInPeriod: { providerId: string; total: number }[] | undefined = undefined;
+        let allExpensesByProviderInPeriod:
+            { providerId: string; providerName: string; total: number }[] | undefined = undefined;
+
 
         for (const requisition of requisitions) {
             const { fornecedorId, departamentoId, itens } = requisition;
             const total = itens.reduce((acc, item) => acc + (Number(item.valor) * item.quantity), 0);
 
-            if (isProviders) {
-                spendByProvider[fornecedorId] = (spendByProvider[fornecedorId] ?? 0) + total;
-            }
+
+            spendByProvider[fornecedorId] = (spendByProvider[fornecedorId] ?? 0) + total;
 
             if (departamentoId && fornecedorId) {
                 if (shouldShowHowMuchEachDepartmentSpentWithEachProvider) {
                     if (!spendByDepartmentAndProvider[departamentoId]) {
                         spendByDepartmentAndProvider[departamentoId] = {};
                     }
-
-                    const totalByItem = requisition.itens.reduce((acc, item) => {
-                        return acc + (Number(item.valor) * item.quantity);
-                    }, 0);
-
                     spendByDepartmentAndProvider[departamentoId][fornecedorId] =
-                        (spendByDepartmentAndProvider[departamentoId][fornecedorId] ?? 0) + totalByItem;
+                        (spendByDepartmentAndProvider[departamentoId][fornecedorId] ?? 0) + total;
                 }
 
                 if (isDepartments) {
@@ -381,15 +399,11 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             }
 
             if (isGroups) {
-                const produtos = await Promise.all(
-                    itens.map(item => prisma.produtos.findFirst({ where: { id: item.produtoId } }))
-                );
-                for (let i = 0; i < itens.length; i++) {
-                    const item = itens[i];
-                    const produto = produtos[i];
-                    if (!produto || !produto.grupoId) continue;
-                    spendByGroup[produto.grupoId] =
-                        (spendByGroup[produto.grupoId] ?? 0) + (Number(item.valor) * item.quantity);
+                for (const item of itens) {
+                    const produto = item.produto;
+                    if (!produto || !produto.grupo?.id) continue;
+                    spendByGroup[produto.grupo.id] =
+                        (spendByGroup[produto.grupo.id] ?? 0) + (Number(item.valor) * item.quantity);
                 }
             }
         }
@@ -397,32 +411,37 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         if (shouldShowAllExpensesByProviderInPeriod) {
             allExpensesByProviderInPeriod = Object.entries(spendByProvider).map(([id, value]) => ({
                 providerId: id,
-                startDate,
-                endDate,
+                providerName: providerMap.get(id) ?? id,
                 total: Number(value.toFixed(2))
             }));
         }
 
+        // Monta resultado com nomes ao invés de IDs
         const result: GenerateReportResponse & {
-            allExpensesByProviderInPeriod?:
-            { providerId: string; total: number }[]
+            allExpensesByProviderInPeriod?: { providerId: string; providerName: string; total: number }[]
         } = {
             byDepartment: Object.entries(spendByDepartment).map(([id, value]) => ({
                 departamentoId: id,
+                departamentoName: departmentMap.get(id) ?? id,
                 total: Number(value.toFixed(2))
             })),
+
             byGroup: Object.entries(spendByGroup).map(([id, value]) => ({
                 groupId: id,
+                grupoName: groupMap.get(id) ?? id,
                 total: Number(value.toFixed(2))
             })),
+
             byProvider: isProviders
                 ? Object.entries(spendByProvider).map(([id, value]) => ({
                     providerId: id,
+                    providerName: providerMap.get(id) ?? id,
                     total: Number(value.toFixed(2))
                 }))
                 : [],
             ...(allExpensesByProviderInPeriod && { allExpensesByProviderInPeriod })
         };
+        console.log("RELATÓRIO FINAL:", JSON.stringify(result, null, 2));
 
         if (shouldShowRequisitionByProviders) {
             const requisitionsByProvider = await prisma.relatorios.findMany({
@@ -476,12 +495,15 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
                 for (const [providerId, total] of Object.entries(providers)) {
                     result.shouldShowHowMuchEachDepartmentSpentWithEachProvider.push({
                         departmentId,
+                        departmentName: departmentMap.get(departmentId) ?? departmentId,
                         providerId,
+                        providerName: providerMap.get(providerId) ?? providerId,
                         total: Number(total.toFixed(2))
                     });
                 }
             }
         }
+
         if (shouldShowHowHasBeenSpentedByGroupInDepartments) {
             const spendByGroupInDepartment: Record<string, Record<string, number>> = {};
 
@@ -540,7 +562,6 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             result.shouldShowDetailedItemsByEachGroup = detailedItemsByGroup;
         }
 
-
         // Monta o objeto do tipo RelatorioData para gerar PDF
         const relatorioParaPdf: RelatorioData = {
             seq: 1, // ou algum ID sequencial real
@@ -562,12 +583,12 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
                 }))
             ),
             createdAt: new Date(),
-            byGroup: result.byGroup?.map(g => ({ groupId: g.groupId, name: g.groupId, total: g.total })) || [],
+            byGroup: result.byGroup?.map(g => ({ groupId: g.groupId, name: g.grupoName, total: g.total })) || [],
             byDepartment: result.byDepartment?.map(d => ({
-                departamentoId: d.departamentoId, name: d.departamentoId, total: d.total
+                departamentoId: d.departamentoId, name: d.departamentoName, total: d.total
             })) || [],
             byProvider: result.byProvider?.map(p => ({
-                providerId: p.providerId, name: p.providerId, total: p.total
+                providerId: p.providerId, name: p.providerName, total: p.total
             })) || [],
             shouldShowRequisitionByProviders: result.shouldShowRequisitionByProviders,
             shouldShowHowMuchEachDepartmentSpentWithEachProvider:
@@ -591,7 +612,7 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             data: result,
             pdf: pdfBuffer.toString("base64")
         });
-        
+
     } catch (error) {
         res.status(500).json({
             status: 500,
