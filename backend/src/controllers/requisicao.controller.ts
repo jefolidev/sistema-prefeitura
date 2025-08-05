@@ -310,6 +310,7 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         shouldShowRequisitionByProviders,
         shouldShowAllExpensesByProviderInPeriod,
         shouldShowHowMuchEachDepartmentSpentWithEachProvider,
+        shouldShowHowHasBeenSpentedByGroupInDepartments
     } = parsed.data;
 
     try {
@@ -321,9 +322,23 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         const requisitions = await prisma.relatorios.findMany({
             where: queryDateFilter,
             include: {
-                fornecedor: { select: { id: true, name: true } },
                 departamento: { select: { id: true, name: true } },
-                itens: true,
+                itens: {
+                    include: {
+                        produto: {
+                            select: {
+                                id: true,
+                                name: true,
+                                grupo: {
+                                    select: {
+                                        id: true,
+                                        name: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         });
 
@@ -464,6 +479,28 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
                 }
             }
         }
+        if (shouldShowHowHasBeenSpentedByGroupInDepartments) {
+            const spendByGroupInDepartment: Record<string, Record<string, number>> = {};
+
+            for (const requisition of requisitions) {
+                const departmentName = requisition.departamento?.name ?? "Desconhecido";
+
+                if (!spendByGroupInDepartment[departmentName]) {
+                    spendByGroupInDepartment[departmentName] = {};
+                }
+
+                for (const item of requisition.itens) {
+                    const grupoName = item.produto?.grupo?.name ?? "Sem grupo";
+                    const total = Number(item.valor) * item.quantity;
+
+                    spendByGroupInDepartment[departmentName][grupoName] =
+                        (spendByGroupInDepartment[departmentName][grupoName] ?? 0) + total;
+                }
+            }
+
+            result.shouldShowHowHasBeenSpentedByGroupInDepartments = spendByGroupInDepartment;
+        }
+
         res.status(200).json({
             status: 200,
             data: result
