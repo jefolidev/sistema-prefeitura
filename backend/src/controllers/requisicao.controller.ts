@@ -308,7 +308,8 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         isDepartments,
         isProviders,
         shouldShowRequisitionByProviders,
-        shouldShowAllExpensesByProviderInPeriod
+        shouldShowAllExpensesByProviderInPeriod,
+        shouldShowHowMuchEachDepartmentSpentWithEachProvider,
     } = parsed.data;
 
     try {
@@ -330,6 +331,8 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         const spendByGroup: Record<string, number> = {};
         const spendByProvider: Record<string, number> = {};
 
+        const spendByDepartmentAndProvider: Record<string, Record<string, number>> = {};
+
         let allExpensesByProviderInPeriod: { providerId: string; total: number }[] | undefined = undefined;
 
         for (const requisition of requisitions) {
@@ -340,8 +343,23 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
                 spendByProvider[fornecedorId] = (spendByProvider[fornecedorId] ?? 0) + total;
             }
 
-            if (isDepartments && departamentoId) {
-                spendByDepartment[departamentoId] = (spendByDepartment[departamentoId] ?? 0) + total;
+            if (departamentoId && fornecedorId) {
+                if (shouldShowHowMuchEachDepartmentSpentWithEachProvider) {
+                    if (!spendByDepartmentAndProvider[departamentoId]) {
+                        spendByDepartmentAndProvider[departamentoId] = {};
+                    }
+
+                    const totalByItem = requisition.itens.reduce((acc, item) => {
+                        return acc + (Number(item.valor) * item.quantity);
+                    }, 0);
+
+                    spendByDepartmentAndProvider[departamentoId][fornecedorId] =
+                        (spendByDepartmentAndProvider[departamentoId][fornecedorId] ?? 0) + totalByItem;
+                }
+
+                if (isDepartments) {
+                    spendByDepartment[departamentoId] = (spendByDepartment[departamentoId] ?? 0) + total;
+                }
             }
 
             if (isGroups) {
@@ -433,6 +451,19 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             result.shouldShowRequisitionByProviders = Object.values(grouped);
         }
 
+        if (shouldShowHowMuchEachDepartmentSpentWithEachProvider) {
+            result.shouldShowHowMuchEachDepartmentSpentWithEachProvider = [];
+
+            for (const [departmentId, providers] of Object.entries(spendByDepartmentAndProvider)) {
+                for (const [providerId, total] of Object.entries(providers)) {
+                    result.shouldShowHowMuchEachDepartmentSpentWithEachProvider.push({
+                        departmentId,
+                        providerId,
+                        total: Number(total.toFixed(2))
+                    });
+                }
+            }
+        }
         res.status(200).json({
             status: 200,
             data: result

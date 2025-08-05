@@ -69,13 +69,19 @@ type RequisitionByProvider = {
 
 type ShouldShowRequisitionByProviders = RequisitionByProvider[];
 
+type HowMuchEachDepartmentSpentWithEachProviders = {
+    departmentId: string;
+    providerId: string;
+    total: number;
+}[]
+
 export interface GenerateReportResponse {
     byDepartment: ReponseByDepartment;
     byGroup: ReponseByGroup;
     byProvider: ReponseByProvider;
     shouldShowRequisitionByProviders?: ShouldShowRequisitionByProviders
     shouldShowAllExpensesByProviderInPeriod?: { providerId: string; startDate: Date, endDate: Date, total: number }[];
-    shouldShowHowMuchEachDepartmentSpentWithEachProvider?: unknown;
+    shouldShowHowMuchEachDepartmentSpentWithEachProvider?: HowMuchEachDepartmentSpentWithEachProviders;
     shouldShowHowHasBeenSpentedByGroupInDepartments?: unknown;
     shouldShowValuesSpentedByGroups?: unknown;
     shouldShowDetailedItemsByEachGroup?: unknown;
