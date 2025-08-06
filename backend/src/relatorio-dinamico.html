@@ -41,51 +41,17 @@
     </div>
 
   <div>
-    <table>
-      <tr>
-        <td><strong>AUTORIZAÇÃO SERVIÇOS/COMPRAS Nº:</strong> ${{ID_SEQUENCIAL}}</td>
-        <td>Autorizado por: ${{AUTORIZADO_POR}}</td>
-      </tr>
-      <tr>
-        <td colspan="2"><strong>FORNECEDOR:</strong> ${{FORNECEDOR}}</td>
-      </tr>
-    </table>
+     <h1>Relatório</h1>
+  <p>Gerado por: {{CRIADOR}}</p>
+  <p>Data: {{DATA_HORA}}</p>
 
-    <table>
-      <tr>
-        <th>QUANT.</th>
-        <th>UNID.</th>
-        <th>DISCRIMINAÇÃO</th>
-        <th>VALOR UNIT.</th>
-        <th>VALOR TOTAL</th>
-      </tr>
-
-      <!-- 9 linhas vazias para substituir -->
-      <tr><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr><td></td><td></td><td></td><td></td><td></td></tr>
-
-      <tr>
-        <td colspan="3" class="no-border"></td>
-        <td>VALOR TOTAL:</td>
-        <td>${{VALOT_TOTAL}}</td>
-      </tr>
-      <tr>
-        <td class="no-border" colspan="2"><strong>Requisitante:</strong> ${{CRIADOR}}</td>
-        <td class="no-border" colspan="3"><strong>Retirado por:</strong> ${{RETIRANTE}}</td>
-      </tr>
-    </table>
-
-    <p class="footer-text"><strong>Obs:</strong> ${{OBSERVACOES}}</p>
-    <p class="footer-text"><strong>DATA/HORA:</strong> ${{DATA/HORA}}</p>
-    <p class="footer-text" style="margin-top: 30px;"><strong>Ordenadora de Despesas</strong></p>
-  </div>
+  {{RESUMO_FORNECEDORES}}
+  {{RESUMO_DEPARTAMENTOS}}
+  {{RESUMO_GRUPOS}}
+  {{REQUISICOES_POR_FORNECEDOR}}
+  {{GASTOS_DEPARTAMENTO_FORNECEDOR}}
+  {{GASTOS_GRUPO_POR_DEPARTAMENTO}}
+  {{PRODUTOS_POR_GRUPO}}
 
 </body>
 </html>
