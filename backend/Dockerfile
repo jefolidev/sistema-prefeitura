@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -y \
 # Define variáveis de ambiente para Puppeteer usar o Chromium do sistema
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
     PUPPETEER_DISABLE_SANDBOX=true
+ENV PUPPETEER_SKIP_DOWNLOAD=false
 
 # Define o diretório de trabalho
 WORKDIR /app
