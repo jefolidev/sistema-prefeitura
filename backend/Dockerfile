@@ -23,10 +23,9 @@ RUN apt-get update && apt-get install -y \
     libxdamage1 \
     libxrandr2 \
     xdg-utils \
-    chromium \
-    netcat-openbsd \
-    --no-install-recommends && \
-    rm -rf /var/lib/apt/lists/*
+    libu2f-udev \
+    libvulkan1 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Define variáveis de ambiente para Puppeteer usar o Chromium do sistema
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \

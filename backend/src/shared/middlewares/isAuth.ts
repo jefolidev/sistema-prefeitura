@@ -63,7 +63,6 @@ const isAuth = async (req: requestIndex, res: Response, next: NextFunction) => {
             return;
         };
 
-        console.log("aqui");
         res.status(401).json({ error: "Acesso Não Autorizado" });
         return;
     }
