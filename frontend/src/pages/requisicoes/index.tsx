@@ -46,6 +46,7 @@ const RelatoriosIndex = () => {
                     label="Gerar relatorio"
                     className={"mx-3 mb-3"}
                     variant="outline"
+                    disabled={relatorios.length === 0}
                     icon={<FiDownload/>}
                     onClick={() => setModalVisible(true)}
                 />
