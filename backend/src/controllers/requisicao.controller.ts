@@ -327,6 +327,8 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             include: {
                 departamento: { select: { id: true, name: true } },
                 fornecedor: { select: { id: true, name: true } },
+                user: { select: { id: true, name: true } },
+                creator: { select: { id: true, name: true } },
                 itens: {
                     include: {
                         produto: {
@@ -564,12 +566,16 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         }
 
         const relatorioParaPdf: RelatorioData = {
-            seq: 1,
-            fornecedores: [{ name: "Fornecedor Exemplo", total: 1000 }],
-            user: { name: "Usuário Exemplo" },
-            creator: null,
-            nameRetirante: null,
-            observacao: null,
+            fornecedores: Object.entries(spendByProvider).map(([id, total]) => ({
+                name: providerMap.get(id) || id,
+                total,
+            })),
+            user: {
+                name: requisitions.length > 0 && requisitions[0].user ? requisitions[0].user.name : "Usuário Desconhecido"
+            },
+            creator: {
+                name: requisitions.length > 0 && requisitions[0].creator!.name ? requisitions[0].creator!.name : "Usuário Desconhecido"
+            },
             itens: requisitions.flatMap(r =>
                 r.itens.map(i => ({
                     quantity: i.quantity,

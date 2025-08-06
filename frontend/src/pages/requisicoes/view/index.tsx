@@ -45,7 +45,9 @@ const ViewRelatorioPage = () => {
             .then(response => {
                 const blob = new Blob([response.data], { type: 'application/pdf' });
                 const url = window.URL.createObjectURL(blob);
+
                 const link = document.createElement('a');
+                
                 link.href = url;
                 link.setAttribute('download', `relatorio-${id}.pdf`);
                 document.body.appendChild(link);

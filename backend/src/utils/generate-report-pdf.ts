@@ -3,12 +3,9 @@ import path from "path";
 import puppeteer from "puppeteer";
 
 export interface RelatorioData {
-  seq: number;
   fornecedores: { name: string; total: number }[];
   user: { name: string };
-  creator: { id: string; name: string } | null;
-  nameRetirante: string | null;
-  observacao: string | null;
+  creator: { name: string } | null;
   itens: {
     quantity: number;
     valor: number;

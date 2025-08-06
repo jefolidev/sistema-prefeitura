@@ -37,8 +37,9 @@ export function RequisitionModal({ visible, title, onClose }: ExportRequisitionM
                 const url = window.URL.createObjectURL(blob);
 
                 const link = document.createElement('a');
+
                 link.href = url;
-                link.download = 'relatorio.pdf';
+                link.setAttribute('download', `relatorio-${new Date().getTime().toString()}.pdf`);
                 document.body.appendChild(link);
                 link.click();
 
