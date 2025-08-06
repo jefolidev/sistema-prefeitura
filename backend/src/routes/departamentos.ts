@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { create, exportPdf, getAll, getById, remove, update } from "../controllers/DepartamentosControllers";
+import { create, exportPdf, getAll, getById, remove, update } from "../controllers/departamentos.controller";
 
 const departamentosRoutes = Router();
 

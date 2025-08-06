@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { create, getAll, getById, remove, update, updateRestrictedRoutes } from "../controllers/PermissionsControllers";
+import { create, getAll, getById, remove, update, updateRestrictedRoutes } from "../controllers/permissions.controller";
 
 const permissionsRoute = Router();
 

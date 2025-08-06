@@ -1,5 +1,5 @@
 import cors from "cors";
-import express, { NextFunction, Request, Response } from "express";
+import express, { Request, Response } from "express";
 import application from "./config/application";
 import { getAllowedOrigins } from "./config/cors";
 import expressConfig from "./config/express";
@@ -29,7 +29,7 @@ if (allowedOrigins === "*") {
 
 app.use(routes);
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, req: Request, res: Response) => {
     logger.error(err.stack);
     res.status(500).json({
         status: 500,

@@ -1,185 +1,179 @@
 import { Request, Response } from "express";
 
-import { prisma } from "../shared/database/prisma";
+import { GruposCreateRequestBody, GruposUpdateQuery } from "../@types/grupos";
 import application from "../config/application";
-import { DepartamentosCreateRequestBody, DepartamentosUpdateQuery } from "../@types/Departamentos";
-import { generatePdf } from "../utils/generate_pdf";
+import { prisma } from "../shared/database/prisma";
+import { generatePdf } from "../utils/generate-pdf";
 
-export const getAll = async (req: Request, res: Response): Promise<void> => {
-    prisma.departamentos.findMany().then(departamentos => {
-        res.json({
-            status: 200,
-            message: "Departamentos encontrados com sucesso",
-            data: departamentos
+export const getAll = async (_req: Request, res: Response): Promise<void> => {
+    prisma.grupos.findMany()
+        .then(grupos => {
+            res.json({
+                status: 200,
+                message: "Grupos encontrados com sucesso",
+                data: grupos
+            });
+        })
+        .catch(error => {
+            res.status(500).json({
+                status: 500,
+                message: "Erro ao buscar grupos",
+                ...(application.type === "development" && { error })
+            });
         });
-    }).catch(error => {
-        res.status(500).json({
-            status: 500,
-            message: "Erro ao buscar departamentos",
-            ...(application.type === "development" && { error: error }),
-        });
-    });
 };
 
-interface DepartamentosCreateRequest extends Request {
-    params: DepartamentosUpdateQuery
+interface GrupoGetByIdRequest extends Request {
+    params: GruposUpdateQuery;
 }
-export const getById = async (req: DepartamentosCreateRequest, res: Response): Promise<void> => {
-
+export const getById = async (req: GrupoGetByIdRequest, res: Response): Promise<void> => {
     const { id } = req.params;
 
     if (!id) {
         res.status(400).json({
             status: 400,
-            message: "ID do departamento não informado"
+            message: "ID do grupo não informado"
         });
         return;
     }
 
-    prisma.departamentos.findUnique({
+    prisma.grupos.findUnique({
         where: { id: String(id) }
-    }).then(departamento => {
-        if (!departamento) {
+    }).then(grupo => {
+        if (!grupo) {
             res.status(404).json({
                 status: 404,
-                message: "Departamento não encontrado"
+                message: "Grupo não encontrado"
             });
             return;
         }
         res.json({
             status: 200,
-            message: "Departamento encontrado com sucesso",
-            data: departamento
+            message: "Grupo encontrado com sucesso",
+            data: grupo
         });
     }).catch(error => {
         res.status(500).json({
             status: 500,
-            message: "Erro ao buscar departamento",
-            ...(application.type === "development" && { error: error }),
+            message: "Erro ao buscar grupo",
+            ...(application.type === "development" && { error })
         });
     });
-
 };
 
-interface DepartamentosCreateRequest extends Request {
-    body: DepartamentosCreateRequestBody;
+interface GrupoCreateRequest extends Request {
+    body: GruposCreateRequestBody;
 }
-export const create = async (req: Request, res: Response): Promise<void> => {
-    const { name, responsavel, cpf } = req.body;
+export const create = async (req: GrupoCreateRequest, res: Response): Promise<void> => {
+    const { name } = req.body;
 
-    if (!name || !responsavel) {
+    if (!name) {
         res.status(400).json({
             status: 400,
-            message: "Nome ou responsável não informado"
+            message: "Nome do grupo não informado"
         });
         return;
     }
 
-    prisma.departamentos.create({
-        data: { name, responsavel, ...(cpf !== undefined && { cpf }) }
-    }).then(departamento => {
+    prisma.grupos.create({
+        data: { name }
+    }).then(grupo => {
         res.status(201).json({
             status: 201,
-            message: "Departamento criado com sucesso",
-            data: departamento
+            message: "Grupo criado com sucesso",
+            data: grupo
         });
     }).catch(error => {
         res.status(500).json({
             status: 500,
-            message: "Erro ao criar departamento",
-            ...(application.type === "development" && { error: error }),
+            message: "Erro ao criar grupo",
+            ...(application.type === "development" && { error })
         });
     });
 };
 
-interface DepartamentosUpdateRequest extends Request {
-    params: DepartamentosUpdateQuery;
-    body: DepartamentosCreateRequestBody;
+interface GrupoUpdateRequest extends Request {
+    params: GruposUpdateQuery;
+    body: GruposCreateRequestBody;
 }
-export const update = async (req: DepartamentosUpdateRequest, res: Response): Promise<void> => {
+export const update = async (req: GrupoUpdateRequest, res: Response): Promise<void> => {
     const { id } = req.params;
-    const { name, responsavel, cpf } = req.body;
+    const { name } = req.body;
 
     if (!id) {
         res.status(400).json({
             status: 400,
-            message: "ID do departamento não informado"
+            message: "ID do grupo não informado"
         });
         return;
     }
 
-    if (!name && !responsavel && !cpf) {
+    if (!name) {
         res.status(400).json({
             status: 400,
-            message: "Dados para atualização não informados"
+            message: "Nome do grupo não informado"
         });
         return;
     }
 
-    prisma.departamentos.update({
+    prisma.grupos.update({
         where: { id: String(id) },
-        data: {
-            ...(name !== undefined && { name }),
-            ...(responsavel !== undefined && { responsavel }),
-            ...(cpf !== undefined && { cpf })
-        }
-    }).then(departamento => {
+        data: { name }
+    }).then(grupo => {
         res.json({
             status: 200,
-            message: "Departamento atualizado com sucesso",
-            data: departamento
+            message: "Grupo atualizado com sucesso",
+            data: grupo
         });
     }).catch(error => {
         res.status(500).json({
             status: 500,
-            message: "Erro ao atualizar departamento",
-            ...(application.type === "development" && { error: error }),
+            message: "Erro ao atualizar grupo",
+            ...(application.type === "development" && { error })
         });
     });
 };
 
-interface DepartamentosRemoveRequest extends Request {
-    params: DepartamentosUpdateQuery;
+interface GrupoRemoveRequest extends Request {
+    params: GruposUpdateQuery;
 }
-export const remove = async (req: DepartamentosRemoveRequest, res: Response): Promise<void> => {
-    const {id} = req.params;
+export const remove = async (req: GrupoRemoveRequest, res: Response): Promise<void> => {
+    const { id } = req.params;
 
     if (!id) {
         res.status(400).json({
             status: 400,
-            message: "ID do departamento não informado"
+            message: "ID do grupo não informado"
         });
         return;
     }
 
-    prisma.departamentos.delete({
+    prisma.grupos.delete({
         where: { id: String(id) }
     }).then(() => {
         res.json({
             status: 200,
-            message: "Departamento removido com sucesso"
+            message: "Grupo removido com sucesso"
         });
     }).catch(error => {
         res.status(500).json({
             status: 500,
-            message: "Erro ao remover departamento",
-            ...(application.type === "development" && { error: error }),
+            message: "Erro ao remover grupo",
+            ...(application.type === "development" && { error })
         });
     });
 };
 
-interface DepartamentosExportPdfRequest extends Request {
+interface GrupoExportRequest extends Request {
+    params: GruposUpdateQuery;
     query: {
         startDate?: string;
         endDate?: string;
         reportModel?: string;
     };
-    params: {
-        id?: string;
-    }
 }
 
-export const exportPdf = async (req: DepartamentosExportPdfRequest, res: Response): Promise<void> => {
+export const exportPdf = async (req: GrupoExportRequest, res: Response): Promise<void> => {
 
     const { id } = req.params;
     const { startDate, endDate, reportModel } = req.query;
@@ -196,16 +190,10 @@ export const exportPdf = async (req: DepartamentosExportPdfRequest, res: Respons
     endDateParsed?.setDate(endDateParsed.getDate() + 1);
 
     try {
-
-        const departamento = await prisma.departamentos.findUnique({
-            where: { id: String(id) },
-            select: { name: true }
-        });
-
         const produtos = await prisma.relatorioItens.findMany({
             where: {
                 produto: {
-                    departamentoId: String(id)
+                    grupoId: String(id)
                 },
                 createdAt: {
                     ...(startDate && { gte: new Date(startDate) }),
@@ -262,10 +250,15 @@ export const exportPdf = async (req: DepartamentosExportPdfRequest, res: Respons
                 };
             };
         }[];
-        
+
+        const grupo = await prisma.grupos.findUnique({
+            where: { id: String(id) },
+            select: { name: true }
+        });
+
         const buffer = await generatePdf(
             produtos,
-            `Relatório de Produtos do Departamento "${departamento?.name || "(Departamento sem nome)"}" ${startDate ? ` de ${new Date(startDate).toLocaleDateString("pt-br")}` : ""}${endDate ? ` até ${new Date(endDate).toLocaleDateString("pt-br")}` : ""}`,
+            `Relatório de Produtos do Grupo "${grupo?.name || "(SEM NOME)"}" ${startDate ? ` de ${new Date(startDate).toLocaleDateString("pt-br")}` : ""}${endDate ? ` até ${new Date(endDate).toLocaleDateString("pt-br")}` : ""}`,
             reportModel || "default"
         );
 

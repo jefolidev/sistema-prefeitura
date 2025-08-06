@@ -7,3 +7,4 @@ export type DepartamentosCreateRequestBody = {
 export type DepartamentosUpdateQuery = {
     id: string;
 }
+

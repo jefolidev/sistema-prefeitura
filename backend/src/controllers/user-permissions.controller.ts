@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { UserPermissionsGetQuery, UserPermissionsSwitchStatusQuery } from "../@types/Permissoes";
+import { UserPermissionsGetQuery, UserPermissionsSwitchStatusQuery } from "../@types/permissoes";
 import application from "../config/application";
 import { prisma } from "../shared/database/prisma";
 

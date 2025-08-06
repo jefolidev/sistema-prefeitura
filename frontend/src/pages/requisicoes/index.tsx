@@ -17,7 +17,6 @@ const RelatoriosIndex = () => {
     const navigate = useNavigate();
 
     const { setLoading } = useContext(Context);
-    
 
     const requestRelatorios = () => {
         setLoading(true);

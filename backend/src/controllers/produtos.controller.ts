@@ -1,190 +1,212 @@
 import { Request, Response } from "express";
 
-import { prisma } from "../shared/database/prisma";
+import { ProdutosCreateRequestBody, ProdutosUpdateQuery } from "../@types/produtos";
 import application from "../config/application";
-import { GruposCreateRequestBody, GruposUpdateQuery } from "../@types/Grupos";
-import { generatePdf } from "../utils/generate_pdf";
+import { prisma } from "../shared/database/prisma";
+import { generatePdf } from "../utils/generate-pdf";
 
-export const getAll = async (_req: Request, res: Response): Promise<void> => {
-    prisma.grupos.findMany()
-        .then(grupos => {
+interface getAllRequest extends Request {
+    query: {
+        fornecedorId?: string;
+    };
+}
+
+export const getAll = async (req: getAllRequest, res: Response): Promise<void> => {
+
+    const { fornecedorId } = req.query;
+
+    prisma.produtos.findMany({
+        where: {
+            ...(fornecedorId && { fornecedorId: String(fornecedorId) })
+        }
+    })
+        .then(produtos => {
             res.json({
                 status: 200,
-                message: "Grupos encontrados com sucesso",
-                data: grupos
+                message: "Produtos encontrados com sucesso",
+                data: produtos
             });
         })
         .catch(error => {
             res.status(500).json({
                 status: 500,
-                message: "Erro ao buscar grupos",
+                message: "Erro ao buscar produtos",
                 ...(application.type === "development" && { error })
             });
         });
 };
 
-interface GrupoGetByIdRequest extends Request {
-    params: GruposUpdateQuery;
+interface ProdutosGetByIdRequest extends Request {
+    params: ProdutosUpdateQuery;
 }
-export const getById = async (req: GrupoGetByIdRequest, res: Response): Promise<void> => {
+export const getById = async (req: ProdutosGetByIdRequest, res: Response): Promise<void> => {
     const { id } = req.params;
 
     if (!id) {
         res.status(400).json({
             status: 400,
-            message: "ID do grupo não informado"
+            message: "ID do produto não informado"
         });
         return;
     }
 
-    prisma.grupos.findUnique({
+    prisma.produtos.findUnique({
         where: { id: String(id) }
-    }).then(grupo => {
-        if (!grupo) {
+    }).then(produto => {
+        if (!produto) {
             res.status(404).json({
                 status: 404,
-                message: "Grupo não encontrado"
+                message: "Produto não encontrado"
             });
             return;
         }
         res.json({
             status: 200,
-            message: "Grupo encontrado com sucesso",
-            data: grupo
+            message: "Produto encontrado com sucesso",
+            data: produto
         });
     }).catch(error => {
         res.status(500).json({
             status: 500,
-            message: "Erro ao buscar grupo",
+            message: "Erro ao buscar produto",
             ...(application.type === "development" && { error })
         });
     });
 };
 
-interface GrupoCreateRequest extends Request {
-    body: GruposCreateRequestBody;
+interface ProdutosCreateRequest extends Request {
+    body: ProdutosCreateRequestBody;
 }
-export const create = async (req: GrupoCreateRequest, res: Response): Promise<void> => {
-    const { name } = req.body;
+export const create = async (req: ProdutosCreateRequest, res: Response): Promise<void> => {
+    const {
+        name, description,
+        fornecedorId, departamentoId,
+        unidadeMedida, valor, grupoId
+    } = req.body;
 
-    if (!name) {
+    if (
+        !name || !fornecedorId ||
+        !unidadeMedida || valor === undefined ||
+        !grupoId
+    ) {
         res.status(400).json({
             status: 400,
-            message: "Nome do grupo não informado"
+            message: "Dados do produto incompletos"
         });
         return;
     }
 
-    prisma.grupos.create({
-        data: { name }
-    }).then(grupo => {
+    prisma.produtos.create({
+        data: {
+            name,
+            description,
+            fornecedorId,
+            ...(departamentoId !== undefined && { departamentoId }),
+            unidadeMedida,
+            valor,
+            grupoId
+        }
+    }).then(produto => {
         res.status(201).json({
             status: 201,
-            message: "Grupo criado com sucesso",
-            data: grupo
+            message: "Produto criado com sucesso",
+            data: produto
         });
     }).catch(error => {
         res.status(500).json({
             status: 500,
-            message: "Erro ao criar grupo",
+            message: "Erro ao criar produto",
             ...(application.type === "development" && { error })
         });
     });
 };
 
-interface GrupoUpdateRequest extends Request {
-    params: GruposUpdateQuery;
-    body: GruposCreateRequestBody;
+interface ProdutosUpdateRequest extends Request {
+    params: ProdutosUpdateQuery;
+    body: ProdutosCreateRequestBody;
 }
-export const update = async (req: GrupoUpdateRequest, res: Response): Promise<void> => {
+export const update = async (req: ProdutosUpdateRequest, res: Response): Promise<void> => {
     const { id } = req.params;
-    const { name } = req.body;
+    const {
+        name, description,
+        quantity, fornecedorId, departamentoId,
+        unidadeMedida, valor, grupoId
+    } = req.body;
 
     if (!id) {
         res.status(400).json({
             status: 400,
-            message: "ID do grupo não informado"
+            message: "ID do produto não informado"
         });
         return;
     }
 
-    if (!name) {
-        res.status(400).json({
-            status: 400,
-            message: "Nome do grupo não informado"
-        });
-        return;
-    }
-
-    prisma.grupos.update({
+    prisma.produtos.update({
         where: { id: String(id) },
-        data: { name }
-    }).then(grupo => {
+        data: {
+            ...(name !== undefined && { name }),
+            ...(description !== undefined && { description }),
+            ...(quantity !== undefined && { quantity }),
+            ...(fornecedorId !== undefined && { fornecedorId }),
+            ...(departamentoId !== undefined && { departamentoId }),
+            ...(unidadeMedida !== undefined && { unidadeMedida }),
+            ...(valor !== undefined && { valor }),
+            ...(grupoId !== undefined && { grupoId })
+        }
+    }).then(produto => {
         res.json({
             status: 200,
-            message: "Grupo atualizado com sucesso",
-            data: grupo
+            message: "Produto atualizado com sucesso",
+            data: produto
         });
     }).catch(error => {
         res.status(500).json({
             status: 500,
-            message: "Erro ao atualizar grupo",
+            message: "Erro ao atualizar produto",
             ...(application.type === "development" && { error })
         });
     });
 };
 
-interface GrupoRemoveRequest extends Request {
-    params: GruposUpdateQuery;
+interface ProdutosRemoveRequest extends Request {
+    params: ProdutosUpdateQuery;
 }
-export const remove = async (req: GrupoRemoveRequest, res: Response): Promise<void> => {
+export const remove = async (req: ProdutosRemoveRequest, res: Response): Promise<void> => {
     const { id } = req.params;
 
     if (!id) {
         res.status(400).json({
             status: 400,
-            message: "ID do grupo não informado"
+            message: "ID do produto não informado"
         });
         return;
     }
 
-    prisma.grupos.delete({
+    prisma.produtos.delete({
         where: { id: String(id) }
     }).then(() => {
         res.json({
             status: 200,
-            message: "Grupo removido com sucesso"
+            message: "Produto removido com sucesso"
         });
     }).catch(error => {
         res.status(500).json({
             status: 500,
-            message: "Erro ao remover grupo",
+            message: "Erro ao remover produto",
             ...(application.type === "development" && { error })
         });
     });
 };
 
-interface GrupoExportRequest extends Request {
-    params: GruposUpdateQuery;
+interface ProdutosExportPdfRequest extends Request {
     query: {
         startDate?: string;
         endDate?: string;
         reportModel?: string;
-    };
-}
-
-export const exportPdf = async (req: GrupoExportRequest, res: Response): Promise<void> => {
-
-    const { id } = req.params;
-    const { startDate, endDate, reportModel } = req.query;
-
-    if (!id) {
-        res.status(400).json({
-            status: 400,
-            message: "ID do grupo não informado"
-        });
-        return;
     }
+}
+export const exportPdf = async (req: ProdutosExportPdfRequest, res: Response): Promise<void> => {
+    const { startDate, endDate, reportModel } = req.query;
 
     const endDateParsed = endDate ? new Date(endDate) : undefined;
     endDateParsed?.setDate(endDateParsed.getDate() + 1);
@@ -192,13 +214,8 @@ export const exportPdf = async (req: GrupoExportRequest, res: Response): Promise
     try {
         const produtos = await prisma.relatorioItens.findMany({
             where: {
-                produto: {
-                    grupoId: String(id)
-                },
-                createdAt: {
-                    ...(startDate && { gte: new Date(startDate) }),
-                    ...(endDate && { lte: endDateParsed })
-                }
+                ...(startDate && { createdAt: { gte: new Date(startDate) } }),
+                ...(endDate && { createdAt: { lte: endDateParsed } })
             },
             select: {
                 valor: true,
@@ -251,14 +268,9 @@ export const exportPdf = async (req: GrupoExportRequest, res: Response): Promise
             };
         }[];
 
-        const grupo = await prisma.grupos.findUnique({
-            where: { id: String(id) },
-            select: { name: true }
-        });
-        
         const buffer = await generatePdf(
             produtos,
-            `Relatório de Produtos do Grupo "${grupo?.name || "(SEM NOME)"}" ${startDate ? ` de ${new Date(startDate).toLocaleDateString("pt-br")}` : ""}${endDate ? ` até ${new Date(endDate).toLocaleDateString("pt-br")}` : ""}`,
+            `Relatório de Produtos${startDate ? ` de ${new Date(startDate).toLocaleDateString("pt-br")}` : ""}${endDate ? ` até ${new Date(endDate).toLocaleDateString("pt-br")}` : ""}`,
             reportModel || "default"
         );
 

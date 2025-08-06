@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { PermissoesCreateRequestBody, PermissoesUpdateQuery, PermissoesUpdateRoutesToRestrictBody } from "../@types/Permissoes";
+import { PermissoesCreateRequestBody, PermissoesUpdateQuery, PermissoesUpdateRoutesToRestrictBody } from "../@types/permissoes";
 import application from "../config/application";
 import { prisma } from "../shared/database/prisma";
 

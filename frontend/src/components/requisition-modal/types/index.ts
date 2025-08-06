@@ -10,15 +10,14 @@ export interface ExportRequisitionModalProps {
 export const generateReportRequestSchema = z.object({
     startDate: z.coerce.date({ error: "Data inicial é obrigatória" }),
     endDate: z.coerce.date({ error: "Data final é obrigatória" }),
-    isProviders: z.boolean().optional,
-    isGroups: z.boolean().optional,
-    isDepartments: z.boolean().optional,
-    shouldShowRequisitionByProviders: z.boolean().optional,
-    shouldShowAllExpensesByProviderInPeriod: z.boolean().optional,
-    shouldShowHowMuchEachDepartmentSpentWithEachProvider: z.boolean().optional,
-    shouldShowHowHasBeenSpentedByGroupInDepartments: z.boolean().optional,
-    shouldShowValuesSpentedByGroups: z.boolean().optional,
-    shouldShowDetailedItemsByEachGroup: z.boolean().optional,
+    isProviders: z.boolean().optional(),
+    isGroups: z.boolean().optional(),
+    isDepartments: z.boolean().optional(),
+    shouldShowRequisitionByProviders: z.boolean().optional(),
+    shouldShowAllExpensesByProviderInPeriod: z.boolean().optional(),
+    shouldShowHowMuchEachDepartmentSpentWithEachProvider: z.boolean().optional(),
+    shouldShowHowHasBeenSpentedByGroupInDepartments: z.boolean().optional(),
+    shouldShowDetailedItemsByEachGroup: z.boolean().optional(),
 });
 
 export type GenerateRepostRequest = z.infer<typeof generateReportRequestSchema>
@@ -32,5 +31,4 @@ export type GroupKeys = "startDate" |
     "shouldShowAllExpensesByProviderInPeriod" |
     "shouldShowHowMuchEachDepartmentSpentWithEachProvider" |
     "shouldShowHowHasBeenSpentedByGroupInDepartments" |
-    "shouldShowValuesSpentedByGroups" |
     "shouldShowDetailedItemsByEachGroup"

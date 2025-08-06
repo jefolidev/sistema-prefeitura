@@ -73,6 +73,7 @@ const endpoints = {
         getAll: '/requisicao',
         getById: (id: string) => `/requisicao/id/${id}`,
         create: '/requisicao/create',
+        generateReport: '/requisicao/export/pdf',
         update: (id: string) => `/requisicao/edit/${id}`,
         delete: (id: string) => `/requisicao/delete/${id}`,
         exportPdf: (id: string) => `/requisicao/pdf/${id}`,
