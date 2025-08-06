@@ -21,11 +21,10 @@ npx prisma generate
 echo "Aplicando migrations..."
 npx prisma migrate deploy
 
+echo "Rodando seed do Prisma..."
+npm run db:seed
+
 echo "Subindo aplicação..."
 npm start
 
 echo "Aplicação iniciada com sucesso!"
-
-echo "Realizando seed do banco de dados"
-npm run db:seed
-echo "Seed gerado com sucesso!"
