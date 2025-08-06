@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { create, exportPdf, getAll, getById, remove, update } from "../controllers/GruposControllers";
+import { create, exportPdf, getAll, getById, remove, update } from "../controllers/grupos.controller";
 
 const gruposRoutes = Router();
 
