@@ -5,9 +5,9 @@ import { toast } from "react-toastify";
 import { Grupos, GruposGetResponse } from "../../../@types/GruposRequests";
 import ResponseApiDefault from "../../../@types/ResponseApiDefault";
 import { Context } from "../../../auth-context";
-import ExportModal from "../../../components/ExportModal/ExportModal";
-import api from "../../utils/api";
-import endpoints from "../../utils/endpoints";
+import api from "../../../utils/api";
+import endpoints from "../../../utils/endpoints";
+import ExportModal from "../../../components/export-modal";
 
 const GruposIndex = () => {
 
