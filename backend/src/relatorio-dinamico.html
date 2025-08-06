@@ -15,8 +15,16 @@
       width: 100%;
       margin-bottom: 20px;
     }
+    .table:first-child {
+      margin-top: 100px; /* recuo extra entre tabelas */
+    }
+   
     table, th, td {
       border: 1px solid #666;
+    }
+    table, tr, td, th {
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
     th, td {
       padding: 8px;
@@ -32,6 +40,31 @@
       font-size: 12px;
       margin: 5px 0;
     }
+    /* Isso impede que a tabela seja dividida entre páginas */
+    .table-wrapper {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    @media print {
+    /* Evita quebra no meio da tabela */
+    table.table-break {
+      page-break-inside: avoid;
+    }
+
+    /* Espaço no topo quando quebra antes da tabela */
+    .table-wrapper {
+      break-before: auto;
+      page-break-before: auto;
+      padding-top: 20px; /* <-- o espaçamento que você quer no topo da nova página */
+    }
+
+    /* Evita grudar o título nas páginas novas */
+    h3 {
+      break-before: auto;
+      page-break-before: auto;
+      margin-top: 20px;
+    }
+  }
   </style>
 </head>
 <body>
@@ -45,13 +78,29 @@
   <p>Gerado por: {{CRIADOR}}</p>
   <p>Data: {{DATA_HORA}}</p>
 
-  {{RESUMO_FORNECEDORES}}
-  {{RESUMO_DEPARTAMENTOS}}
-  {{RESUMO_GRUPOS}}
-  {{REQUISICOES_POR_FORNECEDOR}}
-  {{GASTOS_DEPARTAMENTO_FORNECEDOR}}
-  {{GASTOS_GRUPO_POR_DEPARTAMENTO}}
-  {{PRODUTOS_POR_GRUPO}}
+  <div class="table-wrapper">
+    {{RESUMO_FORNECEDORES}}
+  </div>
+
+  <div  class="table-wrapper">
+    {{RESUMO_DEPARTAMENTOS}}
+  </div>
+  <div  class="table-wrapper">
+    {{RESUMO_GRUPOS}}
+  </div>
+  <div  class="table-wrapper">
+    {{REQUISICOES_POR_FORNECEDOR}}
+  </div>
+  <div  class="table-wrapper">
+    {{GASTOS_DEPARTAMENTO_FORNECEDOR}}
+  </div>
+  <div  class="table-wrapper">
+    {{GASTOS_GRUPO_POR_DEPARTAMENTO}}
+  </div>
+  <div  class="table-wrapper">
+    {{PRODUTOS_POR_GRUPO}}
+  </div>
+  
 
 </body>
 </html>

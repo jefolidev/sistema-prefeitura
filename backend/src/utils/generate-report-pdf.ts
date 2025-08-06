@@ -90,7 +90,7 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
   const resumoFornecedores = relatorio.fornecedores?.length
     ? `
       <h3>Resumo por Fornecedor</h3>
-      <table border="1" cellpadding="4" cellspacing="0">
+      <table class="table-break" border="1" cellpadding="4" cellspacing="0">
         <thead><tr><th>Nome do Fornecedor</th><th>Total</th></tr></thead>
         <tbody>
           ${relatorio.fornecedores
@@ -106,7 +106,7 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
   const resumoDepartamentos = relatorio.byDepartment?.length
     ? `
       <h3>Resumo por Departamento</h3>
-      <table border="1" cellpadding="4" cellspacing="0">
+      <table class="table-break" border="1" cellpadding="4" cellspacing="0">
         <thead><tr><th>Nome do Departamento</th><th>Total</th></tr></thead>
         <tbody>
           ${relatorio.byDepartment
@@ -122,7 +122,7 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
   const resumoGrupos = relatorio.byGroup?.length
     ? `
       <h3>Resumo por Grupo</h3>
-      <table border="1" cellpadding="4" cellspacing="0">
+      <table class="table-break" border="1" cellpadding="4" cellspacing="0">
         <thead><tr><th>Nome do Grupo</th><th>Total</th></tr></thead>
         <tbody>
           ${relatorio.byGroup
@@ -153,7 +153,7 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
             </tr>`)
             .join("");
           return `
-          <table border="1" cellpadding="4" cellspacing="0" style="margin-bottom: 20px;">
+          <table class="table-break" border="1" cellpadding="4" cellspacing="0" style="margin-bottom: 20px;">
             <thead>
               <tr><td colspan="6"><strong>Fornecedor: ${provider.fornecedor}</strong></td></tr>
               <tr><th>Departamento</th><th>Data</th><th>Produto</th><th>Qtd</th><th>Preço Unit</th><th>Total</th></tr>
@@ -173,7 +173,7 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
       relatorio.shouldShowHowMuchEachDepartmentSpentWithEachProvider?.length
       ? `
       <h3>Gastos Departamento x Fornecedor</h3>
-      <table border="1" cellpadding="4" cellspacing="0">
+      <table class="table-break" border="1" cellpadding="4" cellspacing="0">
         <thead><tr><th>Departamento</th><th>Fornecedor</th><th>Total</th></tr></thead>
         <tbody>
           ${relatorio.shouldShowHowMuchEachDepartmentSpentWithEachProvider
@@ -198,7 +198,7 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
           .join("");
         return `
           <h4>${dep}</h4>
-          <table border="1" cellpadding="4" cellspacing="0">
+          <table class="table-break" border="1" cellpadding="4" cellspacing="0">
             <thead><tr><th>Grupo</th><th>Total</th></tr></thead>
             <tbody>${rows}</tbody>
           </table>`;
@@ -220,8 +220,8 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
             .map(i => `<tr><td>${i.produto}</td><td>${formatCurrency(i.unitPrice)}</td></tr>`)
             .join("");
           return `
-          <table border="0"><tr><td colspan="2"><strong>${groupName}</strong></td></tr></table>
-          <table border="1" cellpadding="4" cellspacing="0">
+          <table class="table-break" border="0"><tr><td colspan="2"><strong>${groupName}</strong></td></tr></table>
+          <table class="table-break" border="1" cellpadding="4" cellspacing="0">
             <thead><tr><th>Produto</th><th>Valor</th></tr></thead>
             <tbody>${rows}</tbody>
           </table>`;
