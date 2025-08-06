@@ -55,7 +55,7 @@ type RequisitionProduct = {
 export type RequisitionItem = {
     id: string;
     department: string;
-    date: string;
+    date: Date;
     product: RequisitionProduct;
     unitPrice: number;
     total: number;

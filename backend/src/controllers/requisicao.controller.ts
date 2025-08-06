@@ -473,7 +473,8 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
                     grouped[requisition.fornecedorId].requisicoes.push({
                         id: requisition.id,
                         department: requisition.departamento?.name ?? "Departamento desconhecido",
-                        date: requisition.createdAt.toString().split("T")[0],
+                        date: requisition.createdAt,
+                        // .toString().split("T")[0],
                         product: {
                             ...item,
                             createdAt: item.createdAt.toISOString(),

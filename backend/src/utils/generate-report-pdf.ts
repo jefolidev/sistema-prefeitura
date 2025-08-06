@@ -4,7 +4,7 @@ import puppeteer from "puppeteer";
 
 export interface RelatorioData {
   seq: number;
-  fornecedores: { name: string; total: number }[]
+  fornecedores: { name: string; total: number }[];
   user: { name: string };
   creator: { id: string; name: string } | null;
   nameRetirante: string | null;
@@ -30,7 +30,7 @@ export interface RelatorioData {
     requisicoes: {
       id: string;
       department: string;
-      date: string; // ISO ou string que vira date
+      date: Date;
       product: {
         produto: { name: string };
         quantity: number;
@@ -49,7 +49,9 @@ export interface RelatorioData {
 
   shouldShowHowMuchEachDepartmentSpentWithEachProvider?: {
     departmentId: string;
+    departmentName: string;
     providerId: string;
+    providerName: string;
     total: number;
   }[];
 
@@ -89,15 +91,23 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
   html = html.replace(/\$\{\{DATA_HORA\}\}/g, relatorio.createdAt.toLocaleString("pt-BR"));
 
   // 1. Resumo por Fornecedor
-  if (relatorio.fornecedores) {
-    const rows = relatorio.fornecedores.map(p => `<tr><td>${p.name}</td><td>${formatCurrency(p.total)}</td></tr>`)
+  if (relatorio.fornecedores && relatorio.fornecedores.length) {
+    const rows = relatorio.fornecedores
+      .map(p => `<tr><td>${p.name}</td><td>${formatCurrency(p.total)}</td></tr>`)
       .join("\n");
 
     html = replaceSection(
       html,
       "<!-- START_SUMMARY_BY_PROVIDER -->",
       "<!-- END_SUMMARY_BY_PROVIDER -->",
-      `<table><thead><tr><th>Nome do Fornecedor</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table>`
+      `
+<h3>Resumo por Fornecedor</h3>
+<table border="1" cellpadding="4" cellspacing="0">
+  <thead><tr><th>Nome do Fornecedor</th><th>Total</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+<hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;">
+    `
     );
   } else {
     html = replaceSection(html, "<!-- START_SUMMARY_BY_PROVIDER -->", "<!-- END_SUMMARY_BY_PROVIDER -->", "");
@@ -113,7 +123,14 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
       html,
       "<!-- START_SUMMARY_BY_DEPARTMENT -->",
       "<!-- END_SUMMARY_BY_DEPARTMENT -->",
-      `<table><thead><tr><th>Nome do Departamento</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table>`
+      `
+<h3>Resumo por Departamento</h3>
+<table border="1" cellpadding="4" cellspacing="0">
+  <thead><tr><th>Nome do Departamento</th><th>Total</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+<hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;">
+    `
     );
   } else {
     html = replaceSection(html, "<!-- START_SUMMARY_BY_DEPARTMENT -->", "<!-- END_SUMMARY_BY_DEPARTMENT -->", "");
@@ -129,65 +146,96 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
       html,
       "<!-- START_SUMMARY_BY_GROUP -->",
       "<!-- END_SUMMARY_BY_GROUP -->",
-      `<table><thead><tr><th>Nome do Grupo</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table>`
+      `
+<h3>Resumo por Grupo</h3>
+<table border="1" cellpadding="4" cellspacing="0">
+  <thead><tr><th>Nome do Grupo</th><th>Total</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+<hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;">
+    `
     );
   } else {
     html = replaceSection(html, "<!-- START_SUMMARY_BY_GROUP -->", "<!-- END_SUMMARY_BY_GROUP -->", "");
   }
 
   // 4. Requisições feitas por provedores
-  if (relatorio.showRequisitionByProviders
-    && relatorio.shouldShowRequisitionByProviders
-    && relatorio.shouldShowRequisitionByProviders.length) {
+  if (
+    relatorio.showRequisitionByProviders &&
+    relatorio.shouldShowRequisitionByProviders &&
+    relatorio.shouldShowRequisitionByProviders.length
+  ) {
     const requisicoesHtml = relatorio.shouldShowRequisitionByProviders
       .map(providerBlock => {
         const requisicoesRows = providerBlock.requisicoes
-          .map(req => `<tr>
-            <td>${req.department}</td>
-            <td>${new Date(req.date).toLocaleDateString("pt-BR")}</td>
-            <td>${req.product.produto.name}</td>
-            <td>${req.product.quantity}</td>
-            <td>${formatCurrency(req.unitPrice)}</td>
-            <td>${formatCurrency(req.total)}</td>
-          </tr>`)
+          .map(
+            req => `<tr>
+    <td>${req.department}</td>
+    <td>${new Date(req.date).toLocaleDateString("pt-BR")}</td>
+    <td>${req.product.produto.name}</td>
+    <td>${req.product.quantity}</td>
+    <td>${formatCurrency(req.unitPrice)}</td>
+    <td>${formatCurrency(req.total)}</td>
+  </tr>`
+          )
           .join("\n");
 
-        return `<h3>Fornecedor: ${providerBlock.fornecedor}</h3>
-          <table border="1" cellpadding="4" cellspacing="0">
-            <thead>
-              <tr>
-                <th>Departamento</th><th>Data</th><th>Produto</th><th>Quantidade</th><th>Preço Unitário</th><th>Total</th>
-              </tr>
-            </thead>
-            <tbody>${requisicoesRows}</tbody>
-          </table>`;
-      }).join("\n");
+        return `
+<table border="1" cellpadding="4" cellspacing="0" style="margin-bottom: 20px;">
+  <thead>
+    <tr><td colspan="6"><strong>Fornecedor: ${providerBlock.fornecedor}</strong></td></tr>
+    <tr>
+      <th>Departamento</th><th>Data</th><th>Produto</th><th>Quantidade</th><th>Preço Unitário</th><th>Total</th>
+    </tr>
+  </thead>
+  <tbody>${requisicoesRows}</tbody>
+</table>
+        `;
+      })
+      .join("\n");
 
-    html = replaceSection(html, "<!-- START_REQUISITIONS_BY_PROVIDER -->", "<!-- END_REQUISITIONS_BY_PROVIDER -->", requisicoesHtml);
+    html = replaceSection(
+      html,
+      "<!-- START_REQUISITIONS_BY_PROVIDER -->",
+      "<!-- END_REQUISITIONS_BY_PROVIDER -->",
+      `
+<h3>Requisições Feitas por Distribuidores</h3>
+${requisicoesHtml}
+<hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;">
+    `
+    );
   } else {
     html = replaceSection(html, "<!-- START_REQUISITIONS_BY_PROVIDER -->", "<!-- END_REQUISITIONS_BY_PROVIDER -->", "");
   }
 
   // 6. Gastos de Departamento por Fornecedor
-  if (relatorio.showHowMuchEachDepartmentSpentWithEachProvider
-    && relatorio.shouldShowHowMuchEachDepartmentSpentWithEachProvider
-    && relatorio.shouldShowHowMuchEachDepartmentSpentWithEachProvider.length) {
+  if (
+    relatorio.showHowMuchEachDepartmentSpentWithEachProvider &&
+    relatorio.shouldShowHowMuchEachDepartmentSpentWithEachProvider &&
+    relatorio.shouldShowHowMuchEachDepartmentSpentWithEachProvider.length
+  ) {
     const rows = relatorio.shouldShowHowMuchEachDepartmentSpentWithEachProvider
-      .map(item => `<tr>
-        <td>${item.departmentId}</td>
-        <td>${item.providerId}</td>
-        <td>${formatCurrency(item.total)}</td>
-      </tr>`)
+      .map(
+        item => `<tr>
+    <td>${item.departmentName}</td>
+    <td>${item.providerName}</td>
+    <td>${formatCurrency(item.total)}</td>
+  </tr>`
+      )
       .join("\n");
 
     html = replaceSection(
       html,
       "<!-- START_EXPENSES_DEPARTMENT_BY_PROVIDER -->",
       "<!-- END_EXPENSES_DEPARTMENT_BY_PROVIDER -->",
-      `<table border="1" cellpadding="4" cellspacing="0">
-        <thead><tr><th>Departamento</th><th>Fornecedor</th><th>Total Gasto</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>`
+      `
+<h3>Gastos de Departamento por Fornecedor</h3>
+<table border="1" cellpadding="4" cellspacing="0">
+  <thead><tr><th>Departamento</th><th>Fornecedor</th><th>Total Gasto</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+<hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;">
+    `
     );
   } else {
     html = replaceSection(html, "<!-- START_EXPENSES_DEPARTMENT_BY_PROVIDER -->", "<!-- END_EXPENSES_DEPARTMENT_BY_PROVIDER -->", "");
@@ -200,11 +248,13 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
         const rows = Object.entries(groups)
           .map(([groupName, total]) => `<tr><td>${groupName}</td><td>${formatCurrency(total)}</td></tr>`)
           .join("\n");
-        return `<h4>Departamento: ${dept}</h4>
-          <table border="1" cellpadding="4" cellspacing="0">
-            <thead><tr><th>Grupo</th><th>Total</th></tr></thead>
-            <tbody>${rows}</tbody>
-          </table>`;
+        return `
+<h4>Departamento: ${dept}</h4>
+<table border="1" cellpadding="4" cellspacing="0" style="margin-bottom: 20px;">
+  <thead><tr><th>Grupo</th><th>Total</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+        `;
       })
       .join("\n");
 
@@ -212,7 +262,11 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
       html,
       "<!-- START_EXPENSES_GROUPS_BY_DEPARTMENT -->",
       "<!-- END_EXPENSES_GROUPS_BY_DEPARTMENT -->",
-      groupsInDepartmentsHtml
+      `
+<h3>Gastos por Grupos de Departamentos</h3>
+${groupsInDepartmentsHtml}
+<hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;">
+    `
     );
   } else {
     html = replaceSection(html, "<!-- START_EXPENSES_GROUPS_BY_DEPARTMENT -->", "<!-- END_EXPENSES_GROUPS_BY_DEPARTMENT -->", "");
@@ -225,15 +279,28 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
         const itemsHtml = items
           .map(i => `<tr><td>${i.produto}</td><td>${formatCurrency(i.unitPrice)}</td></tr>`)
           .join("\n");
-        return `<h3>${groupName}</h3>
-          <table border="1" cellpadding="4" cellspacing="0">
-            <thead><tr><th>Nome do Produto</th><th>Valor Unitário</th></tr></thead>
-            <tbody>${itemsHtml}</tbody>
-          </table>`;
+        return `
+<table border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 5px;">
+  <tr><td colspan="2"><strong>${groupName}</strong></td></tr>
+</table>
+<table border="1" cellpadding="4" cellspacing="0" style="margin-bottom: 20px;">
+  <thead><tr><th>Nome do Produto</th><th>Valor Unitário</th></tr></thead>
+  <tbody>${itemsHtml}</tbody>
+</table>
+<hr style="margin: 15px 0; border: none; border-top: 1px solid #ccc;">
+        `;
       })
       .join("\n");
 
-    html = replaceSection(html, "<!-- START_PRODUCTS_BY_GROUP -->", "<!-- END_PRODUCTS_BY_GROUP -->", groupsHtml);
+    html = replaceSection(
+      html,
+      "<!-- START_PRODUCTS_BY_GROUP -->",
+      "<!-- END_PRODUCTS_BY_GROUP -->",
+      `
+<h3>Produtos por Grupo</h3>
+${groupsHtml}
+    `
+    );
   } else {
     html = replaceSection(html, "<!-- START_PRODUCTS_BY_GROUP -->", "<!-- END_PRODUCTS_BY_GROUP -->", "");
   }
