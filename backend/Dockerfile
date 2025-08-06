@@ -5,7 +5,7 @@ FROM node:20-slim
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Instale dependências necessárias para o Chromium (usado pelo Puppeteer) e netcat (nc)
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get -y install netcat && apt-get install -y \
     wget \
     ca-certificates \
     fonts-liberation \
