@@ -321,7 +321,7 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             ...(endDate && { createdAt: { lte: endDate } })
         };
 
-        // Pega as requisições
+
         const requisitions = await prisma.relatorios.findMany({
             where: queryDateFilter,
             include: {
@@ -346,12 +346,12 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             }
         });
 
-        // Monta mapas pra id => nome
+
         const departmentMap = new Map<string, string>();
         const groupMap = new Map<string, string>();
         const providerMap = new Map<string, string>();
 
-        // Preenche os mapas com os dados das requisições (departamentos, grupos, fornecedores)
+
         for (const req of requisitions) {
             if (req.departamento?.id && req.departamento.name) {
                 departmentMap.set(req.departamento.id, req.departamento.name);
@@ -416,7 +416,7 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             }));
         }
 
-        // Monta resultado com nomes ao invés de IDs
+
         const result: GenerateReportResponse & {
             allExpensesByProviderInPeriod?: { providerId: string; providerName: string; total: number }[]
         } = {
@@ -532,7 +532,7 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
                 unitPrice: number;
             }[]> = {};
 
-            const alreadyAdded = new Set<string>(); // pra garantir unicidade
+            const alreadyAdded = new Set<string>();
 
             for (const requisition of requisitions) {
                 for (const item of requisition.itens) {
@@ -562,12 +562,11 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             result.shouldShowDetailedItemsByEachGroup = detailedItemsByGroup;
         }
 
-        // Monta o objeto do tipo RelatorioData para gerar PDF
         const relatorioParaPdf: RelatorioData = {
-            seq: 1, // ou algum ID sequencial real
-            fornecedores: [{ name: "Fornecedor Exemplo", total: 1000 }], // ajuste conforme seu dado real
-            user: { name: "Usuário Exemplo" }, // idem
-            creator: null, // ou preencha se tiver
+            seq: 1,
+            fornecedores: [{ name: "Fornecedor Exemplo", total: 1000 }],
+            user: { name: "Usuário Exemplo" },
+            creator: null,
             nameRetirante: null,
             observacao: null,
             itens: requisitions.flatMap(r =>
@@ -576,7 +575,7 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
                     valor: Number(i.valor),
                     produto: {
                         name: i.produto.name,
-                        unidadeMedida: "UN", // se tiver no seu dado, senão fixo
+                        unidadeMedida: "UN",
                         valor: Number(i.valor),
                         grupo: i.produto.grupo ? { name: i.produto.grupo.name } : undefined,
                     },
@@ -604,14 +603,19 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             showDetailedItemsByEachGroup: !!result.shouldShowDetailedItemsByEachGroup,
         };
 
-        // Gera o PDF (buffer)
+
         const pdfBuffer = await generateRelatorioReportPdf(relatorioParaPdf);
+
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", "attachment; filename=relatorio.pdf");
+        res.send(pdfBuffer);
 
         res.status(200).json({
             status: 200,
             data: result,
             pdf: pdfBuffer.toString("base64")
         });
+
 
     } catch (error) {
         res.status(500).json({

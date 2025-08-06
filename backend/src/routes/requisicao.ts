@@ -6,7 +6,7 @@ const requisicaoRoutes = Router();
 requisicaoRoutes.get("/", getAll);
 requisicaoRoutes.get("/id/:id", getById);
 requisicaoRoutes.get("/pdf/:id", exportPdf);
-requisicaoRoutes.get("/export/pdf", generateReport);
+requisicaoRoutes.post("/export/pdf", generateReport);
 requisicaoRoutes.post("/create", create);
 requisicaoRoutes.patch("/cancel/:id", cancel);
 

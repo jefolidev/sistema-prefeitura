@@ -2,7 +2,6 @@ import fs from "fs";
 import path from "path";
 import puppeteer from "puppeteer";
 
-// Tipagem para os dados que o generateRelatorioPdf recebe
 export interface RelatorioData {
   seq: number;
   fornecedores: { name: string; total: number }[]
@@ -72,7 +71,6 @@ export interface RelatorioData {
   showHowMuchEachDepartmentSpentWithEachProvider?: boolean;
   showDetailedItemsByEachGroup?: boolean;
 }
-
 
 const formatCurrency = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -145,7 +143,6 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
       .map(providerBlock => {
         const requisicoesRows = providerBlock.requisicoes
           .map(req => `<tr>
-            <td>${req.id}</td>
             <td>${req.department}</td>
             <td>${new Date(req.date).toLocaleDateString("pt-BR")}</td>
             <td>${req.product.produto.name}</td>
@@ -159,7 +156,7 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
           <table border="1" cellpadding="4" cellspacing="0">
             <thead>
               <tr>
-                <th>ID</th><th>Departamento</th><th>Data</th><th>Produto</th><th>Quantidade</th><th>Preço Unitário</th><th>Total</th>
+                <th>Departamento</th><th>Data</th><th>Produto</th><th>Quantidade</th><th>Preço Unitário</th><th>Total</th>
               </tr>
             </thead>
             <tbody>${requisicoesRows}</tbody>
@@ -169,30 +166,6 @@ export const generateRelatorioReportPdf = async (relatorio: RelatorioData): Prom
     html = replaceSection(html, "<!-- START_REQUISITIONS_BY_PROVIDER -->", "<!-- END_REQUISITIONS_BY_PROVIDER -->", requisicoesHtml);
   } else {
     html = replaceSection(html, "<!-- START_REQUISITIONS_BY_PROVIDER -->", "<!-- END_REQUISITIONS_BY_PROVIDER -->", "");
-  }
-
-  // 5. Gastos por Fornecedores em um Período
-  if (relatorio.shouldShowAllExpensesByProviderInPeriod && relatorio.shouldShowAllExpensesByProviderInPeriod.length) {
-    const rows = relatorio.shouldShowAllExpensesByProviderInPeriod
-      .map(e => `<tr>
-        <td>${e.providerId}</td>
-        <td>${formatCurrency(e.total)}</td>
-        <td>${new Date(e.startDate).toLocaleDateString("pt-BR")}</td>
-        <td>${new Date(e.endDate).toLocaleDateString("pt-BR")}</td>
-      </tr>`)
-      .join("\n");
-
-    html = replaceSection(
-      html,
-      "<!-- START_EXPENSES_BY_PROVIDER_PERIOD -->",
-      "<!-- END_EXPENSES_BY_PROVIDER_PERIOD -->",
-      `<table border="1" cellpadding="4" cellspacing="0">
-        <thead><tr><th>Fornecedor</th><th>Gastos</th><th>Data Inicial</th><th>Data Final</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>`
-    );
-  } else {
-    html = replaceSection(html, "<!-- START_EXPENSES_BY_PROVIDER_PERIOD -->", "<!-- END_EXPENSES_BY_PROVIDER_PERIOD -->", "");
   }
 
   // 6. Gastos de Departamento por Fornecedor

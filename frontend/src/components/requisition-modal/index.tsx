@@ -2,9 +2,12 @@ import { CAccordion, CAccordionBody, CAccordionHeader, CAccordionItem, CFormChec
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "react-toastify";
+import api from "../../utils/api";
+import endpoints from "../../utils/endpoints";
 import { Button } from "../button";
 import './styles/index.css';
-import { ExportRequisitionModalProps, generateReportRequestSchema, GroupKeys } from "./types";
+import { ExportRequisitionModalProps, generateReportRequestSchema, GenerateRepostRequest, GroupKeys } from "./types";
 
 export function RequisitionModal({ visible, title, onClose }: ExportRequisitionModalProps) {
     const [startDate, setStartDate] = useState('');
@@ -23,6 +26,31 @@ export function RequisitionModal({ visible, title, onClose }: ExportRequisitionM
         checked: boolean
     ) {
         groupKeys.forEach((key) => setValue(key, checked));
+    }
+
+    function handleGenerateRequisitionReport(data: GenerateRepostRequest) {
+        api.post(endpoints.relatorios.generateReport, data, {
+            responseType: 'blob', // 👈 ISSO AQUI É CRUCIAL PRA RECEBER BINÁRIO (PDF)
+        })
+            .then((res) => {
+                const blob = new Blob([res.data], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'relatorio.pdf';
+                document.body.appendChild(link);
+                link.click();
+
+                link.remove();
+                window.URL.revokeObjectURL(url);
+
+                toast.success("Relatório gerado e baixado com sucesso!");
+            })
+            .catch((err) => {
+                const data = err.response?.data;
+                toast.error(data?.message || "Erro ao gerar PDF");
+            });
     }
 
     useEffect(() => {
@@ -148,14 +176,13 @@ export function RequisitionModal({ visible, title, onClose }: ExportRequisitionM
                                                     label="Selecionar todas opções"
                                                     id="selectAllGroupsFields"
                                                     className="opacity-75 text-sm w-full ml-4"
-                                                    checked={Boolean(watch("shouldShowValuesSpentedByGroups")) && Boolean(watch("shouldShowDetailedItemsByEachGroup"))}
-                                                    onChange={(e) => handleCheckAllInGroup(["shouldShowValuesSpentedByGroups", "shouldShowDetailedItemsByEachGroup"],  e.target.checked)}
+                                                    checked={Boolean(watch("shouldShowDetailedItemsByEachGroup"))}
+                                                    onChange={(e) => handleCheckAllInGroup(["shouldShowDetailedItemsByEachGroup"],  e.target.checked)}
                                                 />  : null}
                                         </CAccordionHeader>
                                         {isGroupsChecked ?
                                             <CAccordionBody className="flex-col">
                                                 <div className="flex gap-4 my-2">
-                                                    <CFormCheck label="Mostrar os valores gastos por grupos" className="text-md" id="shouldShowValuesSpentedByGroups" {...register("shouldShowValuesSpentedByGroups")}/>
                                                     <CFormCheck label="Mostrar itens detalhados por cada grupo" className="text-md" id="shouldShowDetailedItemsByEachGroup" {...register("shouldShowDetailedItemsByEachGroup")}/>
                                                 </div>
                                             </CAccordionBody> 
@@ -177,7 +204,7 @@ export function RequisitionModal({ visible, title, onClose }: ExportRequisitionM
                     color="primary"
                     label="Exportar"
                     type="submit"
-                    onClick={handleSubmit((data) => console.log(data))}
+                    onClick={handleSubmit(handleGenerateRequisitionReport)}
                 />
             </CModalFooter>
         </CModal>
