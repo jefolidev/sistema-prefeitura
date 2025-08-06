@@ -205,6 +205,7 @@ export function RequisitionModal({ visible, title, onClose }: ExportRequisitionM
                     color="primary"
                     label="Exportar"
                     type="submit"
+                    disabled={!isProvidersChecked && !isGroupsChecked && !isDepartmentsChecked}
                     onClick={handleSubmit(handleGenerateRequisitionReport)}
                 />
             </CModalFooter>
