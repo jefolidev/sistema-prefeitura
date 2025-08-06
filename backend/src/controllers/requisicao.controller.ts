@@ -315,17 +315,6 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         shouldShowDetailedItemsByEachGroup,
     } = parsed.data;
 
-    console.log(startDate,
-        endDate,
-        isGroups,
-        isDepartments,
-        isProviders,
-        shouldShowRequisitionByProviders,
-        shouldShowAllExpensesByProviderInPeriod,
-        shouldShowHowMuchEachDepartmentSpentWithEachProvider,
-        shouldShowHowHasBeenSpentedByGroupInDepartments,
-        shouldShowDetailedItemsByEachGroup);
-
     try {
         const queryDateFilter = {
             ...(startDate && { createdAt: { gte: startDate } }),
@@ -359,7 +348,12 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
             }
         });
 
-
+        if (requisitions.length === 0) {
+            res.status(404).json({
+                status: 404,
+                message: "Nenhum registro encontrado para o período selecionado.",
+            });
+        }
         const departmentMap = new Map<string, string>();
         const groupMap = new Map<string, string>();
         const providerMap = new Map<string, string>();
