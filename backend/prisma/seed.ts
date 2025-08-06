@@ -7,7 +7,6 @@ const prisma = new PrismaClient();
 (async () => {
     console.log("Seeding database...");
     // Clear existing data
-    await prisma.users.deleteMany();
     await prisma.fornecedores.deleteMany();
     await prisma.departamentos.deleteMany();
     await prisma.produtos.deleteMany();
@@ -16,6 +15,7 @@ const prisma = new PrismaClient();
     await prisma.relatorioItens.deleteMany();
     await prisma.userPermissions.deleteMany();
     await prisma.permissions.deleteMany();
+    await prisma.users.deleteMany();
 
     console.log("Creating groups")
     await prisma.grupos.create({
