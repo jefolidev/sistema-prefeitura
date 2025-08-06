@@ -315,6 +315,17 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         shouldShowDetailedItemsByEachGroup,
     } = parsed.data;
 
+    console.log(startDate,
+        endDate,
+        isGroups,
+        isDepartments,
+        isProviders,
+        shouldShowRequisitionByProviders,
+        shouldShowAllExpensesByProviderInPeriod,
+        shouldShowHowMuchEachDepartmentSpentWithEachProvider,
+        shouldShowHowHasBeenSpentedByGroupInDepartments,
+        shouldShowDetailedItemsByEachGroup);
+
     try {
         const queryDateFilter = {
             ...(startDate && { createdAt: { gte: startDate } }),
@@ -613,7 +624,7 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         const pdfBuffer = await generateRelatorioReportPdf(relatorioParaPdf);
 
         res.setHeader("Content-Type", "application/pdf");
-        res.setHeader("Content-Disposition", "attachment; filename=relatorio.pdf");
+        res.setHeader("Content-Disposition", `attachment; filename=relatorio.pdf`);
         res.send(pdfBuffer);
 
     } catch (error) {
