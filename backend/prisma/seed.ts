@@ -7,26 +7,15 @@ const prisma = new PrismaClient();
 (async () => {
     console.log("Seeding database...");
     // Clear existing data
-
-    await prisma.$executeRawUnsafe('TRUNCATE TABLE "relatorio_itens" CASCADE;');
-    await prisma.$executeRawUnsafe('TRUNCATE TABLE "relatorios" CASCADE;');
-    await prisma.$executeRawUnsafe('TRUNCATE TABLE "user_permissions" CASCADE;');
-    await prisma.$executeRawUnsafe('TRUNCATE TABLE "permissions" CASCADE;');
-    await prisma.$executeRawUnsafe('TRUNCATE TABLE "users" CASCADE;');
-    await prisma.$executeRawUnsafe('TRUNCATE TABLE "produtos" CASCADE;');
-    await prisma.$executeRawUnsafe('TRUNCATE TABLE "fornecedores" CASCADE;');
-    await prisma.$executeRawUnsafe('TRUNCATE TABLE "departamentos" CASCADE;');
-    await prisma.$executeRawUnsafe('TRUNCATE TABLE "grupos" CASCADE;');
-
-    // await prisma.fornecedores.deleteMany();
-    // await prisma.departamentos.deleteMany();
-    // await prisma.produtos.deleteMany();
-    // await prisma.grupos.deleteMany();
-    // await prisma.relatorios.deleteMany();
-    // await prisma.relatorioItens.deleteMany();
-    // await prisma.userPermissions.deleteMany();
-    // await prisma.permissions.deleteMany();
-    // await prisma.users.deleteMany();
+    await prisma.relatorioItens.deleteMany();
+    await prisma.relatorios.deleteMany();
+    await prisma.userPermissions.deleteMany();
+    await prisma.permissions.deleteMany();
+    await prisma.users.deleteMany();
+    await prisma.fornecedores.deleteMany();
+    await prisma.departamentos.deleteMany();
+    await prisma.produtos.deleteMany();
+    await prisma.grupos.deleteMany();
 
     console.log("Creating groups")
     await prisma.grupos.create({
