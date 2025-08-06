@@ -443,7 +443,6 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
                 : [],
             ...(allExpensesByProviderInPeriod && { allExpensesByProviderInPeriod })
         };
-        console.log("RELATÓRIO FINAL:", JSON.stringify(result, null, 2));
 
         if (shouldShowRequisitionByProviders) {
             const requisitionsByProvider = await prisma.relatorios.findMany({
@@ -616,13 +615,6 @@ export const generateReport = async (req: RequisitionGenerateReportRequest, res:
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Disposition", "attachment; filename=relatorio.pdf");
         res.send(pdfBuffer);
-
-        res.status(200).json({
-            status: 200,
-            data: result,
-            pdf: pdfBuffer.toString("base64")
-        });
-
 
     } catch (error) {
         res.status(500).json({
