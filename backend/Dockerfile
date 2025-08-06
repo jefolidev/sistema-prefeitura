@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     libu2f-udev \
     libvulkan1 \
+    chromium \
     && rm -rf /var/lib/apt/lists/*
 
 # Define variáveis de ambiente para Puppeteer usar o Chromium do sistema

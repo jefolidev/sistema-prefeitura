@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { hashSync } from "bcrypt";
+import { randomUUID } from "crypto";
 
 const prisma = new PrismaClient();
 
@@ -16,23 +17,37 @@ const prisma = new PrismaClient();
     await prisma.userPermissions.deleteMany();
     await prisma.permissions.deleteMany();
 
-    // Create many permissions
-    const permissions = [
-        { name: "create_post", description: "Permite criar posts" },
-        { name: "delete_post", description: "Permite deletar posts" },
-        { name: "view_report", description: "Permite visualizar relatórios" },
-        { name: "edit_user", description: "Permite editar usuários" },
-    ]
+    console.log("Creating groups")
+    await prisma.grupos.create({
+        data: {
+            id: randomUUID(),
+            name: "Materiais Didaticos",
+        }
+    })
 
-    for (const perm of permissions) {
-        await prisma.permissions.upsert({
-            where: { name: perm.name },
-            update: {},
-            create: perm
-        })
-    }
+    console.log("Creating providers")
+    await prisma.fornecedores.create({
+        data: {
+            id: randomUUID(),
+            name: "Papelaria e Cia",
+            cnpj: "12.345.678/0001-90",
+            razaoSocial: "Papelaria e Cia LTDA",
+            endereco: "Rua Exemplo, 123, São Paulo, SP",
+            email: "papelaria@papelaria.com",
+            telefone: "11987654321",
+        }
+    })
 
-    console.log("Permissions created successfully!")
+    console.log("Creating departments")
+    await prisma.departamentos.create({
+        data: {
+            id: randomUUID(),
+            name: "Escola Municipal",
+            responsavel: "João da Silva",
+            cpf: "123.456.789-00",
+        }
+    })
+
 
     // Create an admin user
     console.log("Creating admin user...");
