@@ -15,10 +15,8 @@ import styleSidebar from '../sidebar/sidebar.module.css';
 
 const Header = () => {
     const {sidebar, setSidebar, theme, setTheme, setAuthenticated, setLoading, name, userName} = useContext(Context); 
-    const { user } = useUser()
+    const { isSuperUser } = useUser()
     const navigate = useNavigate()
-
-    const isSuperUser = user?.isSuperUser
 
     const logout = () => {
         setLoading(true);

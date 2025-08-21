@@ -6,6 +6,7 @@ import endpoints from "../utils/endpoints";
 
 interface UserContextData {
   user: Users | null;
+  isSuperUser: string | null
   isLoading: boolean;
   loadUser: () => Promise<void>;
 }
@@ -15,6 +16,9 @@ export const UserContext = createContext({} as UserContextData);
 export const UserProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<Users | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    const isSuperUser = localStorage.getItem("isSuperAdmin")
+
     const navigate = useNavigate();
 
     const loadUser = async () => {
@@ -41,7 +45,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     return (
-        <UserContext.Provider value= {{ user, isLoading, loadUser }
+        <UserContext.Provider value= {{ user, isLoading, loadUser, isSuperUser }
         }>
             { children }
         </UserContext.Provider>

@@ -50,7 +50,11 @@ export function RequisitionModal({ visible, title, onClose }: ExportRequisitionM
             })
             .catch((err) => {
                 const data = err.response?.data;
-                toast.error(data?.message || "Erro ao gerar PDF");
+                if (err.response?.status === 404) {
+                    toast.warn(data?.message || "Nenhum dado encontrado para esse período.");
+                } else {
+                    toast.error(data?.message || "Erro ao gerar PDF");
+                }
             });
     }
 

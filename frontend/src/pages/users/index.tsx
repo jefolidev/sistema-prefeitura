@@ -19,9 +19,7 @@ const UsersIndex = () => {
     const [exportId, setExportId] = useState<string | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
 
-    const { user } = useUser()
-    const isSuperUser = user?.isSuperUser
-
+    const { isSuperUser } = useUser()
 
     const exportPdf = (id: string, startDate: string, endDate: string, reportModel: string) => {
         setLoading(true);
