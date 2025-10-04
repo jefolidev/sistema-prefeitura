@@ -27,6 +27,18 @@ if (allowedOrigins === "*") {
     }));
 }
 
+app.options("*", cors({
+    origin: allowedOrigins === "*" ? true : function (origin, callback) {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins === "*" || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error("CORS não permitido"));
+    },
+    credentials: true,
+}));
+
+
 app.use(routes);
 
 app.use((err: Error, req: Request, res: Response) => {
