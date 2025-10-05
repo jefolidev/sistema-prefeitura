@@ -3,6 +3,8 @@ import { env } from '../env';
 
 const allowedOrigins = env.FRONTEND_URL.split(',');
 
+console.log('Allowed origins:', allowedOrigins);
+
 export const corsMiddleware = cors({
   origin: function(origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
