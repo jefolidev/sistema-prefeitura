@@ -1,6 +1,7 @@
-import "../bootstrap";
+import '../bootstrap'
+import { env } from '../env'
 
-export default({
-    port: process.env.PORT || 4000,
-    urlBackend: process.env.URL_BACKEND || "http://localhost:4000"
-});
+export default {
+  port: env.PORT || 4444,
+  urlBackend: env.URL_BACKEND || 'http://localhost:4444',
+}

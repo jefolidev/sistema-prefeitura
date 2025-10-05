@@ -66,7 +66,7 @@ const Cadastrar = () => {
 
         setLoading(true);
 
-        api.post(endpoints.user.register, {
+        api.post(endpoints.auth.register, {
             nome: nomeCompleto,
             user: nomeUsuario,
             numero: telefone,

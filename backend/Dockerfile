@@ -1,10 +1,10 @@
-# Use uma imagem oficial do Node.js baseada em Debian (com apt-get)
-FROM node:20-slim
+# Use imagem oficial Node.js baseada em Debian (compatível com apt-get)
+FROM node:18-bullseye
 
-# Evita prompts interativos
+# Evita prompts interativos durante instalação
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Instale dependências necessárias para o Chromium (usado pelo Puppeteer) e netcat (nc)
+# Instala dependências do sistema necessárias para Puppeteer e netcat
 RUN apt-get update && apt-get install -y \
     netcat-openbsd \
     wget \
@@ -31,24 +31,23 @@ RUN apt-get update && apt-get install -y \
 
 # Define variáveis de ambiente para Puppeteer usar o Chromium do sistema
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
-    PUPPETEER_DISABLE_SANDBOX=true
-ENV PUPPETEER_SKIP_DOWNLOAD=false
+    PUPPETEER_DISABLE_SANDBOX=true \
+    PUPPETEER_SKIP_DOWNLOAD=true
 
-# Define o diretório de trabalho
+# Define diretório de trabalho dentro do container
 WORKDIR /app
 
-# Copie os arquivos de dependências
+# Copia arquivos de dependência para aproveitar cache do Docker
 COPY package*.json ./
 
-# Instale as dependências do Node.js
-RUN npm install
+# Instala dependências Node.js usando npm ci (mais rápido e confiável)
+RUN npm ci --prefer-offline --no-audit --progress=false
 
-# Copie o restante do código da aplicação
+# Copia o restante do código da aplicação
 COPY . .
 
-# Exponha a porta usada pela aplicação
+# Expõe a porta que a aplicação vai usar
 EXPOSE 3000
 
-# Use o script start.sh para iniciar o container
+# Comando padrão para iniciar a aplicação (ajuste se necessário)
 CMD ["sh", "./start.sh"]
-

@@ -1,5 +1,6 @@
-import "../bootstrap";
+import '../bootstrap'
+import { env } from '../env'
 
 export default {
-    type: process.env.NODE_ENV || "development",
-};
+  type: env.NODE_ENV || 'development',
+}
