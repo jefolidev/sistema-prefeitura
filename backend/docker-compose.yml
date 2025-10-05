@@ -30,7 +30,7 @@ services:
     container_name: backend-pref
     restart: unless-stopped
     ports:
-      - '4000:3000'
+      - '4000:4000'
     environment:
       DATABASE_URL: 'postgresql://admin:admin@pg:5432/backend-pref'
       URL_REDIS: 'redis://redis:6379'
