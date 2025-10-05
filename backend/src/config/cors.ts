@@ -1,7 +1,16 @@
 import cors from 'cors'
+import { env } from '../env';
+
+const allowedOrigins = env.FRONTEND_URL.split(',');
 
 export const corsMiddleware = cors({
-  origin: 'http://vg08ss0048wkscsos4gosg08.72.60.241.250.sslip.io',
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token'],
   credentials: true,
