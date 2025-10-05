@@ -47,7 +47,7 @@ RUN npm ci --prefer-offline --no-audit --progress=false
 COPY . .
 
 # Expõe a porta que a aplicação vai usar
-EXPOSE 3000
+EXPOSE 4000
 
 # Comando padrão para iniciar a aplicação (ajuste se necessário)
 CMD ["sh", "./start.sh"]

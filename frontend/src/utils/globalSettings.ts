@@ -1,4 +1,4 @@
-const apiUrl = import.meta.env.URL_BACKEND || 'http://localhost:4444'
+const apiUrl = import.meta.env.VITE_URL_BACKEND || 'http://localhost:4444'
 
 export default {
   url_backend: apiUrl,
