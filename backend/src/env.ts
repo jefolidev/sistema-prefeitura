@@ -4,7 +4,7 @@ export const envSchema = z.object({
   DATABASE_URL: z.string(),
   URL_REDIS: z.string(),
   PORT: z.coerce.number().default(4000),
-  FRONTEND_URL: z.string().default('http://localhost:5173'),
+  FRONTEND_URL: z.string(),
   URL_BACKEND: z.string().default('http://localhost:4444'),
   JWT_SECRET: z.string().default('mysecret'),
   JWT_REFRESH_SECRET: z.string().default('myanothersecret'),
